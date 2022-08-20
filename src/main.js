@@ -1,7 +1,7 @@
-import { TripPresenter } from './presenter/trip-presenter.js';
+import { RoutePresenter } from './presenter/route-presenter.js';
 import { RouteModel } from './model/route-points-model.js';
 
-const tripPresenter = new TripPresenter();
+const routePresenter = new RoutePresenter();
 const routeModel = new RouteModel();
 
-tripPresenter.initiatePage(routeModel);
+routePresenter.initiatePage(routeModel);
