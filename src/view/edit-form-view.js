@@ -176,14 +176,16 @@ class EditFormView {
   #point = null;
   #destinations = null;
   #element = null;
+  #offers = null;
 
-  constructor(point, destinations) {
+  constructor(point, destinations, offers) {
     this.#point = point;
     this.#destinations = destinations;
+    this.#offers = offers;
   }
 
   get template() {
-    return createEditFormElement(this.#point, this.#destinations);
+    return createEditFormElement(this.#point, this.#destinations, this.#offers);
   }
 
   get element() {

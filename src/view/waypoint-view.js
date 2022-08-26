@@ -1,6 +1,6 @@
 import { createElement } from '../render.js';
 import { formatToTimeDate, formatToDate, formatToDayMonth, formatMinutesToTime } from '../util.js';
-import { OFFERS } from '../mock/mock-data.js';
+//import { OFFERS } from '../mock/mock-data.js';
 
 const createOffers = (point, offers) => {
   let currentOffers = '';
@@ -27,9 +27,9 @@ const createOffers = (point, offers) => {
   return currentOffers;
 };
 
-const createWaypointElement = (point, destinations) => {
+const createWaypointElement = (point, destinations, offers) => {
   const { basePrice, dateFrom, dateTo, type, destination } = point;
-  const currentPointDestination = destinations.filter( (element) => element.id === destination );
+  const currentPointDestination = destinations.find( (element) => element.id === destination );
   return (
     `<li class="trip-events__item">
 <div class="event">
@@ -50,7 +50,7 @@ const createWaypointElement = (point, destinations) => {
   </p>
   <h4 class="visually-hidden">Offers:</h4>
   <ul class="event__selected-offers">
-    ${ createOffers(point, OFFERS) }
+    ${ createOffers(point, offers) }
   </ul>
   <button class="event__rollup-btn" type="button">
     <span class="visually-hidden">Open event</span>
@@ -64,14 +64,16 @@ class WaypointView {
   #point = null;
   #destinations = null;
   #element = null;
+  #offers = null;
 
-  constructor(point, destinations) {
+  constructor(point, destinations, offers) {
     this.#point = point;
     this.#destinations = destinations;
+    this.#offers = offers;
   }
 
   get template() {
-    return createWaypointElement(this.#point, this.#destinations);
+    return createWaypointElement(this.#point, this.#destinations, this.#offers);
   }
 
   get element() {

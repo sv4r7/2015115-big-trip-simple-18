@@ -5,8 +5,6 @@ import { WaypointsListView } from '../view/waypoints-list-view.js';
 import { WaypointView } from '../view/waypoint-view.js';
 import { EditFormView } from '../view/edit-form-view.js';
 import { isEscKey } from '../util.js';
-//import { onEscKeydown } from '../util.js';
-//import { getRandomIndex } from '../util.js';
 
 const routeMainContainerElement = document.querySelector('.trip-main');
 const routeControlsFiltersContainerElement = routeMainContainerElement.querySelector('.trip-controls__filters');
@@ -17,25 +15,25 @@ class RoutePresenter {
   #routeModel = null;
   #currentRoutes = null;
   #destinations = null;
+  #offers = null;
 
   initiatePage = (routeModel) => {
     this.#routeModel = routeModel;
     this.#currentRoutes = [...this.#routeModel.routes ];
     this.#destinations = [...this.#routeModel.destinations ];
+    this.#offers = [...this.#routeModel.offers ];
     render(new FormFiltersView(), routeControlsFiltersContainerElement);
     render(new FormSortingView(), routeEventSectionElement);
     render(this.#wayPointListElement, routeEventSectionElement);
-    //render(new EditFormView(this.#currentRoutes[ getRandomIndex(this.#currentRoutes) ], this.#destinations[ getRandomIndex(this.#destinations) ] ), this.#wayPointListElement.element );
 
     for (let i = 0; i <= this.#currentRoutes.length - 1; i++) {
-      this.#renderWaypoint(this.#currentRoutes[i], this.#destinations);
-      //render(new WaypointView( this.#currentRoutes[i], this.#destinations ), this.#wayPointListElement.element );
+      this.#renderWaypoint(this.#currentRoutes[i], this.#destinations, this.#offers);
     }
   };
 
-  #renderWaypoint = (waypoint, destination) => {
-    const waypointComponent = new WaypointView(waypoint, destination);
-    const editFormComponent = new EditFormView(waypoint, destination);
+  #renderWaypoint = (waypoint, destination, offers) => {
+    const waypointComponent = new WaypointView(waypoint, destination, offers);
+    const editFormComponent = new EditFormView(waypoint, destination, offers);
     const replaceWaypointToEditForm = () => {
       this.#wayPointListElement.element.replaceChild(editFormComponent.element, waypointComponent.element);
     };
