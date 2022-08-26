@@ -3,8 +3,9 @@ import { formatToTimeDateDual } from '../util.js';
 import dayjs from 'dayjs';
 
 const createEditFormElement = (point = {}, destinations) => {
-  const { basePrice = '', dateFrom = dayjs( new Date() ) , dateTo = dayjs( new Date() ), type } = point;
-  const { description, name, pictures } = destinations;
+  const { basePrice = '', dateFrom = dayjs( new Date() ) , dateTo = dayjs( new Date() ), type, destination } = point;
+  const currentPointDestination = destinations.filter( (element) => element.id === destination );
+  const { description, name, pictures } = currentPointDestination[0];
   return (
     `<li class="trip-events__item">
 <form class="event event--edit" action="#" method="post">

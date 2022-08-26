@@ -2,9 +2,9 @@ import { createElement } from '../render.js';
 import { formatToTimeDate, formatToDate, formatToDayMonth, formatMinutesToTime } from '../util.js';
 import { OFFERS } from '../mock/mock-data.js';
 
-const createOffers = (point, data) => {
+const createOffers = (point, offers) => {
   let currentOffers = '';
-  const offerType = data.filter( (element) => element.type === point.type );
+  const offerType = offers.filter( (element) => element.type === point.type );
   const offersType = offerType[0].offers;
   const offersTypeMap = new Map(Object.entries(offersType) );
   point.offers.forEach( (id) => {
@@ -29,7 +29,7 @@ const createOffers = (point, data) => {
 
 const createWaypointElement = (point, destinations) => {
   const { basePrice, dateFrom, dateTo, type, destination } = point;
-  const currentPointDestination = destinations.find( (element) => element.id === destination );
+  const currentPointDestination = destinations.filter( (element) => element.id === destination );
   return (
     `<li class="trip-events__item">
 <div class="event">
