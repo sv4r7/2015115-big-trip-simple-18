@@ -11,19 +11,22 @@ const routeControlsFiltersContainerElement = routeMainContainerElement.querySele
 const routeEventSectionElement = document.querySelector('.trip-events');
 
 class RoutePresenter {
-  wayPointListElement = new WaypointsListView();
+  #wayPointListElement = new WaypointsListView();
+  #routeModel = null;
+  #currentRoutes = null;
+  #destinations = null;
 
   initiatePage = (routeModel) => {
-    this.routeModel = routeModel;
-    this.currentRoutes = [...this.routeModel.getRoutes() ];
-    this.destinations = [...this.routeModel.getDestinations() ];
+    this.#routeModel = routeModel;
+    this.#currentRoutes = [...this.#routeModel.routes ];
+    this.#destinations = [...this.#routeModel.destinations ];
     render(new FormFiltersView(), routeControlsFiltersContainerElement);
     render(new FormSortingView(), routeEventSectionElement);
-    render(this.wayPointListElement, routeEventSectionElement);
-    render(new EditFormView(this.currentRoutes[ getRandomIndex(this.currentRoutes) ], this.destinations[ getRandomIndex(this.destinations) ] ), this.wayPointListElement.getElement() );
+    render(this.#wayPointListElement, routeEventSectionElement);
+    render(new EditFormView(this.#currentRoutes[ getRandomIndex(this.#currentRoutes) ], this.#destinations[ getRandomIndex(this.#destinations) ] ), this.#wayPointListElement.element );
 
-    for (let i = 0; i <= this.currentRoutes.length - 1; i++) {
-      render(new WaypointView( this.currentRoutes[i], this.destinations ), this.wayPointListElement.getElement() );
+    for (let i = 0; i <= this.#currentRoutes.length - 1; i++) {
+      render(new WaypointView( this.#currentRoutes[i], this.#destinations ), this.#wayPointListElement.element );
     }
   };
 }
