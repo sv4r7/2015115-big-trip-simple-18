@@ -5,12 +5,15 @@ import { WaypointsListView } from '../view/waypoints-list-view.js';
 import { WaypointView } from '../view/waypoint-view.js';
 import { EditFormView } from '../view/edit-form-view.js';
 import { isEscKey } from '../util.js';
+import { EmptyWaypointsList } from '../view/empty-waypoints-list-view.js';
 
 const routeMainContainerElement = document.querySelector('.trip-main');
 const routeControlsFiltersContainerElement = routeMainContainerElement.querySelector('.trip-controls__filters');
 const routeEventSectionElement = document.querySelector('.trip-events');
 
 class RoutePresenter {
+
+  #emptyWaypointsList = new EmptyWaypointsList();
   #wayPointListElement = new WaypointsListView();
   #routeModel = null;
   #currentRoutes = null;
@@ -26,8 +29,16 @@ class RoutePresenter {
     render(new FormSortingView(), routeEventSectionElement);
     render(this.#wayPointListElement, routeEventSectionElement);
 
-    for (let i = 0; i <= this.#currentRoutes.length - 1; i++) {
-      this.#renderWaypoint(this.#currentRoutes[i], this.#destinations, this.#offers);
+    this.#renderPageFilling();
+  };
+
+  #renderPageFilling = () => {
+    if(!this.#wayPointListElement) {
+      render(this.#emptyWaypointsList, this.#wayPointListElement.element);
+    } else {
+      for (let i = 0; i <= this.#currentRoutes.length - 1; i++) {
+        this.#renderWaypoint(this.#currentRoutes[i], this.#destinations, this.#offers);
+      }
     }
   };
 
