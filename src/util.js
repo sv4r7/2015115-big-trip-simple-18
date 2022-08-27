@@ -2,6 +2,8 @@ import dayjs from 'dayjs';
 
 const RANGE_LIMIT = 1;
 
+const isEscKey = (evt) => evt.key === 'Escape' || evt.key === 'Esc';
+
 const getRandomNumber = (startValue, endValue) => {
   if (startValue < 0 || endValue < 0) {
     return;
@@ -32,4 +34,5 @@ const formatMinutesToTime = (data) => dayjs(data).format('HH [:] mm');
 
 const getRandomIndex = (data) => getRandomNumber(0, data.length - 1);
 
-export { getRandomNumber, getRandomIndex, formatToYear, formatToTimeDate, formatToDate, formatToDayMonth, formatMinutesToTime, formatToTimeDateDual };
+export { getRandomNumber, getRandomIndex, formatToYear, formatToTimeDate, formatToDate };
+export { formatToDayMonth, formatMinutesToTime, formatToTimeDateDual, isEscKey };

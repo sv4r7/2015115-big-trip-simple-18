@@ -1,10 +1,10 @@
 import { createElement } from '../render.js';
 import { formatToTimeDate, formatToDate, formatToDayMonth, formatMinutesToTime } from '../util.js';
-import { OFFERS } from '../mock/mock-data.js';
+//import { OFFERS } from '../mock/mock-data.js';
 
-const createOffers = (point, data) => {
+const createOffers = (point, offers) => {
   let currentOffers = '';
-  const offerType = data.filter( (element) => element.type === point.type );
+  const offerType = offers.filter( (element) => element.type === point.type );
   const offersType = offerType[0].offers;
   const offersTypeMap = new Map(Object.entries(offersType) );
   point.offers.forEach( (id) => {
@@ -27,7 +27,7 @@ const createOffers = (point, data) => {
   return currentOffers;
 };
 
-const createWaypointElement = (point, destinations) => {
+const createWaypointElement = (point, destinations, offers) => {
   const { basePrice, dateFrom, dateTo, type, destination } = point;
   const currentPointDestination = destinations.find( (element) => element.id === destination );
   return (
@@ -50,7 +50,7 @@ const createWaypointElement = (point, destinations) => {
   </p>
   <h4 class="visually-hidden">Offers:</h4>
   <ul class="event__selected-offers">
-    ${ createOffers(point, OFFERS) }
+    ${ createOffers(point, offers) }
   </ul>
   <button class="event__rollup-btn" type="button">
     <span class="visually-hidden">Open event</span>
@@ -61,25 +61,30 @@ const createWaypointElement = (point, destinations) => {
 };
 
 class WaypointView {
+  #point = null;
+  #destinations = null;
+  #element = null;
+  #offers = null;
 
-  constructor(point, destinations) {
-    this.point = point;
-    this.destinations = destinations;
+  constructor(point, destinations, offers) {
+    this.#point = point;
+    this.#destinations = destinations;
+    this.#offers = offers;
   }
 
-  getTemplate() {
-    return createWaypointElement(this.point, this.destinations);
+  get template() {
+    return createWaypointElement(this.#point, this.#destinations, this.#offers);
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate() );
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
     }
-    return this.element;
+    return this.#element;
   }
 
   removeElement() {
-    this.element = null;
+    this.#element = null;
   }
 }
 

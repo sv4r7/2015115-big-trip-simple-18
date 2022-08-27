@@ -3,8 +3,9 @@ import { formatToTimeDateDual } from '../util.js';
 import dayjs from 'dayjs';
 
 const createEditFormElement = (point = {}, destinations) => {
-  const { basePrice = '', dateFrom = dayjs( new Date() ) , dateTo = dayjs( new Date() ), type } = point;
-  const { description, name, pictures } = destinations;
+  const { basePrice = '', dateFrom = dayjs( new Date() ) , dateTo = dayjs( new Date() ), type, destination } = point;
+  const currentPointDestination = destinations.filter( (element) => element.id === destination );
+  const { description, name, pictures } = currentPointDestination[0];
   return (
     `<li class="trip-events__item">
 <form class="event event--edit" action="#" method="post">
@@ -172,25 +173,30 @@ const createEditFormElement = (point = {}, destinations) => {
 };
 
 class EditFormView {
+  #point = null;
+  #destinations = null;
+  #element = null;
+  #offers = null;
 
-  constructor(point, destinations) {
-    this.point = point;
-    this.destinations = destinations;
+  constructor(point, destinations, offers) {
+    this.#point = point;
+    this.#destinations = destinations;
+    this.#offers = offers;
   }
 
-  getTemplate() {
-    return createEditFormElement(this.point, this.destinations);
+  get template() {
+    return createEditFormElement(this.#point, this.#destinations, this.#offers);
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate() );
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
     }
-    return this.element;
+    return this.#element;
   }
 
   removeElement() {
-    this.element = null;
+    this.#element = null;
   }
 }
 
