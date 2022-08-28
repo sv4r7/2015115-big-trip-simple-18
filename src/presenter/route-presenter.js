@@ -30,15 +30,18 @@ class RoutePresenter {
     render(this.#wayPointListElement, routeEventSectionElement);
 
     this.#renderPageFilling();
+    this.#checkChildNodesOnWaypointListElement();
+  };
+
+  #checkChildNodesOnWaypointListElement = () => {
+    if (!this.#wayPointListElement.element.hasChildNodes() ) {
+      render(this.#emptyWaypointsList, this.#wayPointListElement.element);
+    }
   };
 
   #renderPageFilling = () => {
-    if(!this.#wayPointListElement) {
-      render(this.#emptyWaypointsList, this.#wayPointListElement.element);
-    } else {
-      for (let i = 0; i <= this.#currentRoutes.length - 1; i++) {
-        this.#renderWaypoint(this.#currentRoutes[i], this.#destinations, this.#offers);
-      }
+    for (let i = 0; i <= this.#currentRoutes.length - 1; i++) {
+      this.#renderWaypoint(this.#currentRoutes[i], this.#destinations, this.#offers);
     }
   };
 
