@@ -1,6 +1,5 @@
 import { createElement } from '../render.js';
 import { formatToTimeDate, formatToDate, formatToDayMonth, formatMinutesToTime } from '../util.js';
-//import { OFFERS } from '../mock/mock-data.js';
 
 const createOffers = (point, offers) => {
   let currentOffers = '';
