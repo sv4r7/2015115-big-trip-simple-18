@@ -1,4 +1,4 @@
-import {createElement} from '../render.js';
+import { createElement } from '../render.js';
 import './abstract-view.css';
 
 /** @const {string} Класс, реализующий эффект "покачивания головой" */
@@ -10,7 +10,7 @@ const SHAKE_ANIMATION_TIMEOUT = 600;
 /**
  * Абстрактный класс представления
  */
-export default class AbstractView {
+class AbstractView {
   /** @type {HTMLElement|null} Элемент представления */
   #element = null;
 
@@ -66,3 +66,5 @@ export default class AbstractView {
  * Функция, которая будет вызвана методом shake после завершения анимации
  * @callback shakeCallback
  */
+
+export { AbstractView };
