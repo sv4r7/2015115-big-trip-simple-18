@@ -1,4 +1,4 @@
-import { createElement } from '../render.js';
+import { AbstractView } from '../framework/view/abstract-view.js';
 import { formatToTimeDateDual } from '../util.js';
 import dayjs from 'dayjs';
 
@@ -172,13 +172,14 @@ const createEditFormElement = (point = {}, destinations) => {
   );
 };
 
-class EditFormView {
+class EditFormView extends AbstractView {
   #point = null;
   #destinations = null;
   #element = null;
   #offers = null;
 
   constructor(point, destinations, offers) {
+    super();
     this.#point = point;
     this.#destinations = destinations;
     this.#offers = offers;
@@ -188,16 +189,24 @@ class EditFormView {
     return createEditFormElement(this.#point, this.#destinations, this.#offers);
   }
 
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-    return this.#element;
+  setFormSubmitHandler(cb) {
+    this._callback.formSubmit = cb;
+    this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
   }
 
-  removeElement() {
-    this.#element = null;
+  #formSubmitHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.formSubmit();
+  };
+
+  setFormCancelHandler(cb) {
+    this._callback.formCancel = cb;
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#formCancelHandler);
   }
+
+  #formCancelHandler = () => {
+    this._callback.formCancel();
+  };
 }
 
 export { EditFormView };

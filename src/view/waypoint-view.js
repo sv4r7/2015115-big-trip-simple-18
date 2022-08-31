@@ -1,4 +1,4 @@
-import { createElement } from '../render.js';
+import { AbstractView } from '../framework/view/abstract-view.js';
 import { formatToTimeDate, formatToDate, formatToDayMonth, formatMinutesToTime } from '../util.js';
 
 const createOffers = (point, offers) => {
@@ -59,13 +59,14 @@ const createWaypointElement = (point, destinations, offers) => {
   );
 };
 
-class WaypointView {
+class WaypointView extends AbstractView {
   #point = null;
   #destinations = null;
   #element = null;
   #offers = null;
 
   constructor(point, destinations, offers) {
+    super();
     this.#point = point;
     this.#destinations = destinations;
     this.#offers = offers;
@@ -75,16 +76,14 @@ class WaypointView {
     return createWaypointElement(this.#point, this.#destinations, this.#offers);
   }
 
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-    return this.#element;
+  setRollupButtonClicklHandler(cb) {
+    this._callback.rollupButtonClick = cb;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollupButtonClick);
   }
 
-  removeElement() {
-    this.#element = null;
-  }
+  #rollupButtonClick = () => {
+    this._callback.rollupButtonClick();
+  };
 }
 
 export { WaypointView };

@@ -1,4 +1,4 @@
-import { render } from '../render.js';
+import { render } from '../framework/render.js';
 import { FormFiltersView } from '../view/filters-view.js';
 import { FormSortingView } from '../view/sort-view.js';
 import { WaypointsListView } from '../view/waypoints-list-view.js';
@@ -15,6 +15,8 @@ class RoutePresenter {
 
   #emptyWaypointsList = new EmptyWaypointsList();
   #wayPointListElement = new WaypointsListView();
+  #formFiltersElement = new FormFiltersView();
+  #formSortingElement = new FormSortingView();
   #routeModel = null;
   #currentRoutes = null;
   #destinations = null;
@@ -25,9 +27,6 @@ class RoutePresenter {
     this.#currentRoutes = [...this.#routeModel.routes ];
     this.#destinations = [...this.#routeModel.destinations ];
     this.#offers = [...this.#routeModel.offers ];
-    render(new FormFiltersView(), routeControlsFiltersContainerElement);
-    render(new FormSortingView(), routeEventSectionElement);
-    render(this.#wayPointListElement, routeEventSectionElement);
 
     this.#renderPageFilling();
     this.#checkChildNodesOnWaypointListElement();
@@ -40,6 +39,10 @@ class RoutePresenter {
   };
 
   #renderPageFilling = () => {
+    render(this.#formFiltersElement, routeControlsFiltersContainerElement);
+    render(this.#formSortingElement, routeEventSectionElement);
+    render(this.#wayPointListElement, routeEventSectionElement);
+
     for (let i = 0; i <= this.#currentRoutes.length - 1; i++) {
       this.#renderWaypoint(this.#currentRoutes[i], this.#destinations, this.#offers);
     }
@@ -63,16 +66,15 @@ class RoutePresenter {
       }
     };
 
-    waypointComponent.element.querySelector('.event__rollup-btn').addEventListener('click', () => {
+    waypointComponent.setRollupButtonClicklHandler( () => {
       replaceWaypointToEditForm();
       document.addEventListener('keydown', onEscKeydown);
     });
-    editFormComponent.element.querySelector('form').addEventListener('submit', (evt) => {
-      evt.preventDefault();
+    editFormComponent.setFormSubmitHandler( () => {
       replaceEditFormToWaypoint();
       document.removeEventListener('keydown', onEscKeydown);
     });
-    editFormComponent.element.querySelector('.event__reset-btn').addEventListener('click', ()=> {
+    editFormComponent.setFormCancelHandler( ()=> {
       replaceEditFormToWaypoint();
       document.removeEventListener('keydown', onEscKeydown);
     });
