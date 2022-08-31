@@ -76,6 +76,14 @@ class WaypointView extends AbstractView {
     return createWaypointElement(this.#point, this.#destinations, this.#offers);
   }
 
+  setRollupButtonClicklHandler(cb) {
+    this._callback.rollupButtonClick = cb;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollupButtonClick);
+  }
+
+  #rollupButtonClick = () => {
+    this._callback.rollupButtonClick();
+  };
 }
 
 export { WaypointView };

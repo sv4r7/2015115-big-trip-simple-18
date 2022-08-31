@@ -189,6 +189,24 @@ class EditFormView extends AbstractView {
     return createEditFormElement(this.#point, this.#destinations, this.#offers);
   }
 
+  setFormSubmitHandler(cb) {
+    this._callback.formSubmit = cb;
+    this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
+  }
+
+  #formSubmitHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.formSubmit();
+  };
+
+  setFormCancelHandler(cb) {
+    this._callback.formCancel = cb;
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#formCancelHandler);
+  }
+
+  #formCancelHandler = () => {
+    this._callback.formCancel();
+  };
 }
 
 export { EditFormView };
