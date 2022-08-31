@@ -1,4 +1,4 @@
-import { createElement } from '../render.js';
+import { AbstractView } from '../framework/view/abstract-view.js';
 import { formatToTimeDateDual } from '../util.js';
 import dayjs from 'dayjs';
 
@@ -172,13 +172,14 @@ const createEditFormElement = (point = {}, destinations) => {
   );
 };
 
-class EditFormView {
+class EditFormView extends AbstractView {
   #point = null;
   #destinations = null;
   #element = null;
   #offers = null;
 
   constructor(point, destinations, offers) {
+    super();
     this.#point = point;
     this.#destinations = destinations;
     this.#offers = offers;
@@ -188,16 +189,6 @@ class EditFormView {
     return createEditFormElement(this.#point, this.#destinations, this.#offers);
   }
 
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
-  }
 }
 
 export { EditFormView };

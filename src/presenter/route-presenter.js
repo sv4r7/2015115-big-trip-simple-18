@@ -1,4 +1,4 @@
-import { render } from '../render.js';
+import { render } from '../framework/render.js';
 import { FormFiltersView } from '../view/filters-view.js';
 import { FormSortingView } from '../view/sort-view.js';
 import { WaypointsListView } from '../view/waypoints-list-view.js';
