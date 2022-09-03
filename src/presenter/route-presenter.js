@@ -19,6 +19,7 @@ class RoutePresenter {
   #currentRoutes = null;
   #destinations = null;
   #offers = null;
+  #waypointPresenter = new Map ();
 
   initiatePage = (routeModel) => {
     this.#routeModel = routeModel;
@@ -59,8 +60,20 @@ class RoutePresenter {
   };
 
   #renderWaypoint = (waypoint, destination, offers) => {
-    const waypointPresenter = new WaypointPresenter(this.#wayPointListElement.element);
-    waypointPresenter.initiateWaypoint(waypoint, destination, offers);
+    const waypointPresenter = new WaypointPresenter(
+      this.#wayPointListElement.element,
+      this.#handleStateChange
+    );
+    waypointPresenter.initiateWaypoint(
+      waypoint,
+      destination,
+      offers
+    );
+    this.#waypointPresenter.set(waypoint.id, waypointPresenter);
+  };
+
+  #handleStateChange = () => {
+    this.#waypointPresenter.forEach( (subclass) => subclass.resetView() );
   };
 
 }
