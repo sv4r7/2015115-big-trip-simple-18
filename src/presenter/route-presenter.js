@@ -4,6 +4,9 @@ import { FormSortingView } from '../view/sort-view.js';
 import { WaypointsListView } from '../view/waypoints-list-view.js';
 import { EmptyWaypointsList } from '../view/empty-waypoints-list-view.js';
 import { WaypointPresenter } from './waypoint-presenter.js';
+import { SortType } from '../const.js';
+import { sortWaypointUp, sortPrice } from '../util.js';
+
 
 const routeMainContainerElement = document.querySelector('.trip-main');
 const routeControlsFiltersContainerElement = routeMainContainerElement.querySelector('.trip-controls__filters');
@@ -16,14 +19,17 @@ class RoutePresenter {
   #formFiltersElement = new FormFiltersView();
   #formSortingElement = new FormSortingView();
   #routeModel = null;
-  #currentRoutes = null;
+  #currentRoutes = [];
   #destinations = null;
   #offers = null;
   #waypointPresenter = new Map ();
+  #currentSortType = SortType.DAY;
+  #defaultWaypoints = [];
 
   initiatePage = (routeModel) => {
     this.#routeModel = routeModel;
-    this.#currentRoutes = [...this.#routeModel.routes ];
+    this.#defaultWaypoints = [...this.#routeModel.routes ];
+    this.#currentRoutes = [...this.#routeModel.routes ].sort(sortWaypointUp);
     this.#destinations = [...this.#routeModel.destinations ];
     this.#offers = [...this.#routeModel.offers ];
 
@@ -37,6 +43,7 @@ class RoutePresenter {
 
   #renderFormSortingElement = () => {
     render(this.#formSortingElement, routeEventSectionElement);
+    this.#formSortingElement.setSortTypeChangeHandler(this.#handleSortTypeChange);
   };
 
   #renderWaypointListElement = () => {
@@ -48,6 +55,10 @@ class RoutePresenter {
     this.#renderFormSortingElement();
     this.#renderWaypointListElement();
 
+    this.#renderWaypointsList();
+  };
+
+  #renderWaypointsList = () => {
     for (let i = 0; i <= this.#currentRoutes.length - 1; i++) {
       this.#renderWaypoint(this.#currentRoutes[i], this.#destinations, this.#offers);
     }
@@ -74,6 +85,35 @@ class RoutePresenter {
 
   #handleStateChange = () => {
     this.#waypointPresenter.forEach( (subclass) => subclass.resetView() );
+  };
+
+  #clearWaypointList = () => {
+    this.#waypointPresenter.forEach( (subclass) => subclass.destroy() );
+    this.#waypointPresenter.clear();
+  };
+
+  #handleSortTypeChange = (sortType) => {
+    if (this.#currentSortType === sortType) {
+      return;
+    }
+    this.#sortWaypoints(sortType);
+    this.#clearWaypointList();
+    this.#renderWaypointsList();
+  };
+
+  #sortWaypoints = (sortType) => {
+    switch (sortType) {
+      case SortType.DAY:
+        this.#currentRoutes.sort(sortWaypointUp);
+        break;
+      case SortType.PRICE:
+        this.#currentRoutes.sort(sortPrice);
+        break;
+      default:
+        this.#currentRoutes = [...this.#defaultWaypoints];
+        break;
+    }
+    this.#currentSortType = sortType;
   };
 
 }

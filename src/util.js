@@ -34,5 +34,29 @@ const formatMinutesToTime = (data) => dayjs(data).format('HH [:] mm');
 
 const getRandomIndex = (data) => getRandomNumber(0, data.length - 1);
 
-export { getRandomNumber, getRandomIndex, formatToYear, formatToTimeDate, formatToDate };
-export { formatToDayMonth, formatMinutesToTime, formatToTimeDateDual, isEscKey };
+const getWeightForNullDate = (dateA, dateB) => {
+  if (dateA === null && dateB === null) {
+    return 0;
+  }
+
+  if (dateA === null) {
+    return 1;
+  }
+
+  if (dateB === null) {
+    return -1;
+  }
+
+  return null;
+};
+
+const sortWaypointUp = (waypointA, waypointB) => {
+  const weight = getWeightForNullDate(waypointA.dateFrom, waypointB.dateFrom);
+
+  return weight ?? dayjs(waypointA.dateFrom).diff(dayjs(waypointB.dateFrom) );
+};
+
+const sortPrice = (waypointA, waypointB) => waypointA.basePrice - waypointB.basePrice;
+
+export { getRandomNumber, getRandomIndex, formatToYear, formatToTimeDate, formatToDate, sortPrice };
+export { formatToDayMonth, formatMinutesToTime, formatToTimeDateDual, isEscKey, sortWaypointUp};
