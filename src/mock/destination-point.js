@@ -6,7 +6,7 @@ const generateDestinationPointDescription = () => DESTINATION_POINT_DESCRIPTION[
 
 const generateDestinationPointName = () => DESTINATION_POINT_NAMES[ getRandomIndex(DESTINATION_POINT_NAMES) ];
 
-const getDestinationPointPictureSrc = () => `http://picsum.photos/300/200?r=${ getRandomNumber(0, 100) }`;
+const getDestinationPointPictureSrc = () => `https://placekitten.com/${ getRandomNumber(200, 300) }/300`;
 
 const getDestinationPointPictureDescription = () => DESTINATION_POINT_PICTURE_DESCRIPTION[ getRandomIndex(DESTINATION_POINT_PICTURE_DESCRIPTION) ];
 

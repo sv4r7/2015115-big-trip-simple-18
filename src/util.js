@@ -52,11 +52,31 @@ const getWeightForNullDate = (dateA, dateB) => {
 
 const sortWaypointUp = (waypointA, waypointB) => {
   const weight = getWeightForNullDate(waypointA.dateFrom, waypointB.dateFrom);
-
   return weight ?? dayjs(waypointA.dateFrom).diff(dayjs(waypointB.dateFrom) );
 };
 
-const sortPrice = (waypointA, waypointB) => waypointA.basePrice - waypointB.basePrice;
+const sortPrice = (waypointA, waypointB) => waypointB.basePrice - waypointA.basePrice;
 
-export { getRandomNumber, getRandomIndex, formatToYear, formatToTimeDate, formatToDate, sortPrice };
-export { formatToDayMonth, formatMinutesToTime, formatToTimeDateDual, isEscKey, sortWaypointUp};
+const filterFutureWaypoints = (waypoints) => {
+  const dateNow = dayjs(new Date);
+  const futurePoints = [];
+  waypoints.forEach( (waypoint) => {
+    if (dayjs(waypoint.dateFrom).diff(dateNow, 'minute') < 0 && dayjs(waypoint.dateTo).diff(dateNow, 'minute') > 0) {
+      futurePoints.push(waypoint);
+    }
+    if (dayjs(waypoint.dateFrom).diff(dateNow, 'minute') >= 0) {
+      futurePoints.push(waypoint);
+    }
+  });
+  return futurePoints;
+};
+
+const filterEverythingWaypoints = (waypoints) => {
+  const everythingPoints = [];
+  waypoints.forEach( (waypoint) => {
+    everythingPoints.push(waypoint);
+  });
+};
+
+export { getRandomNumber, getRandomIndex, formatToYear, formatToTimeDate, formatToDate, sortPrice, filterFutureWaypoints };
+export { formatToDayMonth, formatMinutesToTime, formatToTimeDateDual, isEscKey, sortWaypointUp, filterEverythingWaypoints };
