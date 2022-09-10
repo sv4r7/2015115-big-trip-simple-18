@@ -8,9 +8,9 @@ const State = {
   EDITING: 'EDITING',
 };
 
-const Filter = {
+const FilterType = {
   EVERYTHING: 'everything',
   FUTURE: 'future',
 };
 
-export { SortType, State, Filter };
+export { SortType, State, FilterType };

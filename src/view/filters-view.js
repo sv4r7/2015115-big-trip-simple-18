@@ -1,38 +1,49 @@
 import { AbstractView } from '../framework/view/abstract-view.js';
-import { Filter } from '../const.js';
 
-const createNewFormFiltersTemplate = () => (
-  `<form class="trip-filters" action="#" method="get">
-  <div class="trip-filters__filter">
-    <input id="filter-everything" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="everything" checked>
-    <label class="trip-filters__filter-label" for="filter-everything" data-filter="${Filter.EVERYTHING}">Everything</label>
-  </div>
+const createNewFormFilterItemTemplate = (filter, isChecked) => {
+  const { name, count } = filter;
 
-  <div class="trip-filters__filter">
-    <input id="filter-future" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="future">
-    <label class="trip-filters__filter-label" for="filter-future" data-filter="${Filter.FUTURE}">Future</label>
-  </div>
+  return (
+    `<div class="trip-filters__filter">
+    <input id="filter-${name}" 
+    class="trip-filters__filter-input  visually-hidden" 
+    type="radio" name="trip-filter" 
+    value="${name}" 
+    ${isChecked ? 'checked' : ''}
+    ${count === 0 ? 'disabled' : ''}
+    >
+    <label class="trip-filters__filter-label" 
+    for="filter-${name}">${name}</label>
+  </div>`
+  );
+};
 
-  <button class="visually-hidden" type="submit">Accept filter</button>
+const createNewFormFiltersTemplate = (filterItems) => {
+  const filterItemsTemplate = filterItems
+    .map( (filter, index) => createNewFormFilterItemTemplate(filter, index === 0) )
+    .join('');
+
+  return (
+    `<form class="trip-filters" action="#" method="get">
+    ${ filterItemsTemplate }
+<button class="visually-hidden" type="submit">Accept filter</button>
 </form>`
-);
+  );
+};
+
 
 class FormFiltersView extends AbstractView {
 
-  get template() {
-    return createNewFormFiltersTemplate();
+  #filters = null;
+
+  constructor(filters) {
+    super();
+    this.#filters = filters;
   }
 
-  setFilterChangeHandler = (cb) => {
-    this._callback.filterChange = cb;
-    this.element.addEventListener('click', this.#filterChangeHandler);
-  };
-
-  #filterChangeHandler = (evt) => {
-    if (evt.target.dataset.filter) {
-      this._callback.filterChange(evt.target.dataset.filter);
-    }
-  };
+  get template() {
+    return createNewFormFiltersTemplate(this.#filters);
+  }
 
 }
 

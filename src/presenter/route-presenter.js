@@ -3,11 +3,10 @@ import { FormFiltersView } from '../view/filters-view.js';
 import { FormSortingView } from '../view/sort-view.js';
 import { WaypointsListView } from '../view/waypoints-list-view.js';
 import { EmptyWaypointsList } from '../view/empty-waypoints-list-view.js';
-import { EmptyFutureWaypointsList } from '../view/empty-future-waypoints-list-view.js';
 import { WaypointPresenter } from './waypoint-presenter.js';
-import { SortType, Filter } from '../const.js';
-import { sortWaypointUp, sortPrice, filterFutureWaypoints, filterEverythingWaypoints } from '../util.js';
-
+import { SortType, FilterType } from '../const.js';
+import { sortWaypointUp, sortPrice } from '../util.js';
+import { generateFilter } from '../mock/filter.js';
 
 const routeMainContainerElement = document.querySelector('.trip-main');
 const routeControlsFiltersContainerElement = routeMainContainerElement.querySelector('.trip-controls__filters');
@@ -15,18 +14,16 @@ const routeEventSectionElement = document.querySelector('.trip-events');
 
 class RoutePresenter {
 
-  #emptyWaypointsList = new EmptyWaypointsList();
-  #emptyFutureWaypointsList = new EmptyFutureWaypointsList();
-  #wayPointListElement = new WaypointsListView();
-  #formFiltersElement = new FormFiltersView();
+  #wayPointListContainerElement = new WaypointsListView();
   #formSortingElement = new FormSortingView();
   #routeModel = null;
   #currentRoutes = [];
   #destinations = null;
   #offers = null;
+  #filters = [];
   #waypointPresenter = new Map ();
   #currentSortType = SortType.DAY;
-  #currentFilter = Filter.EVERYTHING;
+  #currentFilter = FilterType.EVERYTHING;
   #defaultWaypoints = [];
 
   initiatePage = (routeModel) => {
@@ -35,14 +32,13 @@ class RoutePresenter {
     this.#currentRoutes = [...this.#routeModel.routes ].sort(sortWaypointUp);
     this.#destinations = [...this.#routeModel.destinations ];
     this.#offers = [...this.#routeModel.offers ];
+    this.#filters = generateFilter(this.#currentRoutes);
 
     this.#renderPageFilling();
-    this.#checkChildNodesOnWaypointListElement();
   };
 
   #renderFormFiltersElement = () => {
-    render(this.#formFiltersElement, routeControlsFiltersContainerElement);
-    this.#formFiltersElement.setFilterChangeHandler(this.#handleFilterChange);
+    render(new FormFiltersView(this.#filters), routeControlsFiltersContainerElement);
   };
 
   #renderFormSortingElement = () => {
@@ -50,41 +46,31 @@ class RoutePresenter {
     this.#formSortingElement.setSortTypeChangeHandler(this.#handleSortTypeChange);
   };
 
-  #renderWaypointListElement = () => {
-    render(this.#wayPointListElement, routeEventSectionElement);
+  #renderWaypointListContainerElement = () => {
+    render(this.#wayPointListContainerElement, routeEventSectionElement);
   };
 
   #renderPageFilling = () => {
     this.#renderFormFiltersElement();
     this.#renderFormSortingElement();
-    this.#renderWaypointListElement();
+    this.#renderWaypointListContainerElement();
 
     this.#renderWaypointsList();
   };
 
   #renderWaypointsList = () => {
-    for (let i = 0; i <= this.#currentRoutes.length - 1; i++) {
-      this.#renderWaypoint(this.#currentRoutes[i], this.#destinations, this.#offers);
-    }
-  };
-
-  #checkChildNodesOnWaypointListElement = () => {
-    if (!this.#wayPointListElement.element.hasChildNodes() ) {
-      render(this.#emptyWaypointsList, this.#wayPointListElement.element);
-      routeControlsFiltersContainerElement.querySelector('#filter-everything').disabled = true;
-    }
-  };
-
-  #checkChildNodesOnFutureWaypointListElement = () => {
-    if (!this.#wayPointListElement.element.hasChildNodes() ) {
-      render(this.#emptyFutureWaypointsList, this.#wayPointListElement.element);
-      routeControlsFiltersContainerElement.querySelector('#filter-future').disabled = true;
+    if (this.#currentRoutes.length === 0) {
+      render(new EmptyWaypointsList(this.#filters), this.#wayPointListContainerElement.element);
+    } else {
+      for (let i = 0; i <= this.#currentRoutes.length - 1; i++) {
+        this.#renderWaypoint(this.#currentRoutes[i], this.#destinations, this.#offers);
+      }
     }
   };
 
   #renderWaypoint = (waypoint, destination, offers) => {
     const waypointPresenter = new WaypointPresenter(
-      this.#wayPointListElement.element,
+      this.#wayPointListContainerElement.element,
       this.#handleStateChange
     );
     waypointPresenter.initiateWaypoint(
@@ -102,34 +88,6 @@ class RoutePresenter {
   #clearWaypointList = () => {
     this.#waypointPresenter.forEach( (subclass) => subclass.destroy() );
     this.#waypointPresenter.clear();
-  };
-
-  #handleFilterChange = (filter) => {
-    if (this.#currentFilter === filter) {
-      return;
-    }
-    this.#filterWaypoints(filter);
-    this.#clearWaypointList();
-    this.#renderWaypointsList();
-    this.#checkChildNodesOnWaypointListElement();
-    this.#checkChildNodesOnFutureWaypointListElement();
-  };
-
-  #filterWaypoints = (filter) => {
-    this.#currentRoutes = this.#defaultWaypoints;
-    switch (filter) {
-      case Filter.EVERYTHING:
-        routeEventSectionElement.querySelector('#sort-day').checked = true;
-        filterEverythingWaypoints(this.#currentRoutes.sort(sortWaypointUp) );
-        this.#handleSortTypeChange(SortType.DAY);
-        break;
-      case Filter.FUTURE:
-        routeEventSectionElement.querySelector('#sort-day').checked = true;
-        filterFutureWaypoints(this.#currentRoutes.sort(sortWaypointUp) );
-        this.#handleSortTypeChange(SortType.DAY);
-        break;
-    }
-    this.#currentFilter = filter;
   };
 
   #handleSortTypeChange = (sortType) => {

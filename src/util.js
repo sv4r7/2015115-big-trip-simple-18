@@ -1,4 +1,6 @@
 import dayjs from 'dayjs';
+import { FilterType } from './const.js';
+
 
 const RANGE_LIMIT = 1;
 
@@ -57,26 +59,24 @@ const sortWaypointUp = (waypointA, waypointB) => {
 
 const sortPrice = (waypointA, waypointB) => waypointB.basePrice - waypointA.basePrice;
 
-const filterFutureWaypoints = (waypoints) => {
-  const dateNow = dayjs(new Date);
+const filerFutureWaypoints = (waypoint) => {
   const futurePoints = [];
-  waypoints.forEach( (waypoint) => {
-    if (dayjs(waypoint.dateFrom).diff(dateNow, 'minute') < 0 && dayjs(waypoint.dateTo).diff(dateNow, 'minute') > 0) {
-      futurePoints.push(waypoint);
-    }
-    if (dayjs(waypoint.dateFrom).diff(dateNow, 'minute') >= 0) {
-      futurePoints.push(waypoint);
-    }
-  });
+  const dateNow = dayjs(new Date);
+  if (dayjs(waypoint.dateFrom).diff(dateNow, 'minute') >= 0) {
+    futurePoints.push(waypoint);
+  }
+  if (dayjs(waypoint.dateFrom).diff(dateNow, 'minute') < 0 && dayjs(waypoint.dateTo).diff(dateNow, 'minute') > 0) {
+    futurePoints.push(waypoint);
+  }
   return futurePoints;
 };
 
-const filterEverythingWaypoints = (waypoints) => {
-  const everythingPoints = [];
-  waypoints.forEach( (waypoint) => {
-    everythingPoints.push(waypoint);
-  });
+const filter = {
+  [FilterType.EVERYTHING]: (waypoints) => waypoints.filter( (waypoint) => filerFutureWaypoints(waypoint) ),
+  [FilterType.FUTURE]: (waypoints) => waypoints.filter( (waypoint) => waypoint ),
 };
 
-export { getRandomNumber, getRandomIndex, formatToYear, formatToTimeDate, formatToDate, sortPrice, filterFutureWaypoints };
-export { formatToDayMonth, formatMinutesToTime, formatToTimeDateDual, isEscKey, sortWaypointUp, filterEverythingWaypoints };
+export { getRandomNumber, getRandomIndex, formatToYear, formatToTimeDate };
+export { formatToDate, sortPrice };
+export { formatToDayMonth, formatMinutesToTime, formatToTimeDateDual };
+export { isEscKey, sortWaypointUp, filter };
