@@ -1,7 +1,6 @@
 import dayjs from 'dayjs';
 import { FilterType } from './const.js';
 
-
 const RANGE_LIMIT = 1;
 
 const isEscKey = (evt) => evt.key === 'Escape' || evt.key === 'Esc';
@@ -59,21 +58,14 @@ const sortWaypointUp = (waypointA, waypointB) => {
 
 const sortPrice = (waypointA, waypointB) => waypointB.basePrice - waypointA.basePrice;
 
-const filerFutureWaypoints = (waypoint) => {
-  const futurePoints = [];
-  const dateNow = dayjs(new Date);
-  if (dayjs(waypoint.dateFrom).diff(dateNow, 'minute') >= 0) {
-    futurePoints.push(waypoint);
-  }
-  if (dayjs(waypoint.dateFrom).diff(dateNow, 'minute') < 0 && dayjs(waypoint.dateTo).diff(dateNow, 'minute') > 0) {
-    futurePoints.push(waypoint);
-  }
-  return futurePoints;
+const isFutureWaypoint = (waypoint) => {
+  const dateNow = dayjs();
+  return dayjs(waypoint.dateFrom) > dateNow || dayjs(waypoint.dateTo) > dateNow;
 };
 
 const filter = {
-  [FilterType.EVERYTHING]: (waypoints) => waypoints.filter( (waypoint) => filerFutureWaypoints(waypoint) ),
-  [FilterType.FUTURE]: (waypoints) => waypoints.filter( (waypoint) => waypoint ),
+  [FilterType.EVERYTHING]: (waypoints) => waypoints,
+  [FilterType.FUTURE]: (waypoints) => waypoints.filter( (waypoint) => isFutureWaypoint(waypoint) ),
 };
 
 export { getRandomNumber, getRandomIndex, formatToYear, formatToTimeDate };

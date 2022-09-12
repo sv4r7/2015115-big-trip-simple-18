@@ -23,7 +23,6 @@ class RoutePresenter {
   #filters = [];
   #waypointPresenter = new Map ();
   #currentSortType = SortType.DAY;
-  #currentFilter = FilterType.EVERYTHING;
   #defaultWaypoints = [];
 
   initiatePage = (routeModel) => {
@@ -59,12 +58,13 @@ class RoutePresenter {
   };
 
   #renderWaypointsList = () => {
-    if (this.#currentRoutes.length === 0) {
-      render(new EmptyWaypointsList(this.#filters), this.#wayPointListContainerElement.element);
+    if (this.#filters[0].count === 0) {
+      render(new EmptyWaypointsList(FilterType, this.#filters[0].name), this.#wayPointListContainerElement.element);
+    }
+    if (this.#filters[1].count === 0) {
+      render(new EmptyWaypointsList(FilterType, this.#filters[1].name), this.#wayPointListContainerElement.element);
     } else {
-      for (let i = 0; i <= this.#currentRoutes.length - 1; i++) {
-        this.#renderWaypoint(this.#currentRoutes[i], this.#destinations, this.#offers);
-      }
+      this.#currentRoutes.forEach( (waypoint) => this.#renderWaypoint(waypoint, this.#destinations, this.#offers) );
     }
   };
 

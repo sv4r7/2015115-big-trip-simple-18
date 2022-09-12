@@ -1,29 +1,28 @@
 import { AbstractView } from '../framework/view/abstract-view.js';
 
-const createEmptyWaypointsListItemTemplate = (filter) => {
-  const { name } = filter;
-  return name === 'everything' ? 'Click New Event to create your first point' : 'There are no future events now';
-};
-
-const createEmptyWaypointsListTemplate = (filterItems) => {
-  const filterItemsTemplate = filterItems
-    .map( (filter, index) => createEmptyWaypointsListItemTemplate(filter, index === 0) );
+const createEmptyWaypointsListTemplate = (filterTypes, filterName) => {
+  const currentFilterType = filterTypes;
+  const currentFilterName = filterName;
   return (
-    `<p class="trip-events__msg">${filterItemsTemplate}</p>`
+    `<p class="trip-events__msg">
+    ${ currentFilterType.EVERYTHING === currentFilterName ? 'Click New Event to create your first point' : 'There are no future events now'}
+    </p>`
   );
 };
 
 class EmptyWaypointsList extends AbstractView {
 
-  #filters = null;
+  #filterTypes = null;
+  #filterName = null;
 
-  constructor(filters) {
+  constructor(filterTypes, filterName) {
     super();
-    this.#filters = filters;
+    this.#filterTypes = filterTypes;
+    this.#filterName = filterName;
   }
 
   get template () {
-    return createEmptyWaypointsListTemplate(this.#filters);
+    return createEmptyWaypointsListTemplate(this.#filterTypes, this.#filterName);
   }
 
 }
