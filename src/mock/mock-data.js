@@ -1,4 +1,4 @@
-const CURRENT_OFFERS_COUNT = 9;
+const CURRENT_OFFERS_COUNT = 20;
 
 const DESTINATION_POINT_DESCRIPTION = [
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit',

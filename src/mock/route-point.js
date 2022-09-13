@@ -27,8 +27,8 @@ const getOfferId = (type) => {
 const generateRoutePoint = () => (
   {
     'basePrice': getRandomNumber(0, 2000),
-    'dateFrom': `2019-07-${getRandomNumber(10,30)}T22:${getRandomNumber(10,59)}:56.845Z`,
-    'dateTo': `2019-${getRandomNumber(10,12)}-${getRandomNumber(10,30)}T${getRandomNumber(10,23)}:22:13.375Z`,
+    'dateFrom': `2023-07-${getRandomNumber(10,30)}T22:${getRandomNumber(10,59)}:56.845Z`,
+    'dateTo': `2023-${getRandomNumber(10,12)}-${getRandomNumber(10,30)}T${getRandomNumber(10,23)}:22:13.375Z`,
     'destination': getDestinationId(),
     'id': nanoid(10),
     'type': getOfferType(),

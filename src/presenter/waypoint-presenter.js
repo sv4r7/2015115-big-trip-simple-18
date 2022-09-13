@@ -1,12 +1,8 @@
-import { render, replace } from '../framework/render.js';
+import { render, replace, remove } from '../framework/render.js';
 import { EditFormView } from '../view/edit-form-view.js';
 import { WaypointView } from '../view/waypoint-view.js';
 import { isEscKey } from '../util.js';
-
-const State = {
-  DEFAULT: 'DEFAULT',
-  EDITING: 'EDITING',
-};
+import { State } from '../const.js';
 
 class WaypointPresenter {
 
@@ -40,6 +36,11 @@ class WaypointPresenter {
 
     render(this.#waypointComponent, this.#waypointsContainer);
   }
+
+  destroy = () => {
+    remove(this.#waypointComponent);
+    remove(this.#editFormComponent);
+  };
 
   resetView = () => {
     if (this.#state !== State.DEFAULT) {
