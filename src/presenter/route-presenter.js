@@ -4,7 +4,7 @@ import { FormSortingView } from '../view/sort-view.js';
 import { WaypointsListView } from '../view/waypoints-list-view.js';
 import { EmptyWaypointsList } from '../view/empty-waypoints-list-view.js';
 import { WaypointPresenter } from './waypoint-presenter.js';
-import { SortType, FilterType } from '../const.js';
+import { SortType } from '../const.js';
 import { sortWaypointUp, sortPrice } from '../util.js';
 import { generateFilter } from '../mock/filter.js';
 
@@ -58,11 +58,8 @@ class RoutePresenter {
   };
 
   #renderWaypointsList = () => {
-    if (this.#filters[0].count === 0) {
-      render(new EmptyWaypointsList(FilterType, this.#filters[0].name), this.#wayPointListContainerElement.element);
-    }
-    if (this.#filters[1].count === 0) {
-      render(new EmptyWaypointsList(FilterType, this.#filters[1].name), this.#wayPointListContainerElement.element);
+    if (this.#currentRoutes.length === 0) {
+      render(new EmptyWaypointsList(), this.#wayPointListContainerElement.element);
     } else {
       this.#currentRoutes.forEach( (waypoint) => this.#renderWaypoint(waypoint, this.#destinations, this.#offers) );
     }

@@ -60,7 +60,7 @@ const sortPrice = (waypointA, waypointB) => waypointB.basePrice - waypointA.base
 
 const isFutureWaypoint = (waypoint) => {
   const dateNow = dayjs();
-  return dayjs(waypoint.dateFrom) > dateNow || dayjs(waypoint.dateTo) > dateNow;
+  return dayjs(waypoint.dateFrom).isAfter(dateNow) || dayjs(waypoint.dateTo).isAfter(dateNow);
 };
 
 const filter = {
