@@ -1,11 +1,88 @@
-import { AbstractView } from '../framework/view/abstract-view.js';
+import { AbstractStatefulView } from '../framework/view/abstract-stateful-view.js';
 import { formatToTimeDateDual } from '../util.js';
+import { OFFER_BY_TYPE, DESTINATION_POINT_NAMES } from '../mock/mock-data.js';
 import dayjs from 'dayjs';
 
-const createEditFormElement = (point = {}, destinations) => {
-  const { basePrice = '', dateFrom = dayjs( new Date() ) , dateTo = dayjs( new Date() ), type, destination } = point;
+const createEventTypeItem = (currentType) => OFFER_BY_TYPE.map( (type) => `<input id="event-type-${ type }" 
+  class="event__type-input  
+  visually-hidden" type="radio" name="event-type" value="${ type }" ${ currentType === type ? 'checked' : '' }>
+  <label class="event__type-label  event__type-label--${ type }" 
+  for="event-type-${ type }">${ type }</label>` ).join('');
+
+const createEditFormElement = (state, destinations, offers) => {
+  const { basePrice = '', dateFrom = dayjs() , dateTo = dayjs(), type, destination, currentPointCityName } = state;
   const currentPointDestination = destinations.filter( (element) => element.id === destination );
   const { description, name, pictures } = currentPointDestination[0];
+
+  const getCurrenPointId = (currentCityName) => {
+    const cityName = destinations.filter( (element) => element.name === currentCityName );
+    const destinationId = (Object.entries(cityName).map( (id) => id[1].id ) );
+    state.destination = destinationId[0];
+  };
+
+  const getCurrenPointDescription = (currentCityName) => {
+    const cityName = destinations.filter( (element) => element.name === currentCityName );
+    const destinationDescription = (Object.entries(cityName).map( (descript) => descript[1].description ) );
+    return destinationDescription[0] === undefined || destinationDescription[0] === null ? description : destinationDescription[0];
+  };
+
+  const getCurrenPointPhotos = (currentCityName) => {
+    const cityName = destinations.filter( (element) => element.name === currentCityName );
+    const destinationPhotos = (Object.entries(cityName).map( (photos) => photos[1].pictures ) );
+    return currentCityName === null || currentCityName === undefined ? pictures : destinationPhotos[0];
+  };
+
+  const createOffersForCurrentPoint = (currentPoint, currentOffers) => {
+    function СurrentOffers (title, price) {
+      this.title = title;
+      this.price = price;
+    }
+    const newOffers = [];
+    let currentOffer;
+    const offerType = currentOffers.filter( (element) => element.type === type );
+    const offersType = offerType[0].offers;
+    const offersTypeMap = new Map(Object.entries(offersType) );
+    const mapedOffersType = Object.entries(offersType).map( (id) => id[1].id );
+    state.offers = mapedOffersType;
+    currentPoint.offers.forEach( (id) => {
+      let currentOfferTitle;
+      let currentOfferPrice;
+      for (const offer of offersTypeMap) {
+        if (offer[1].id === id ) {
+          currentOfferTitle = offer[1].title;
+          currentOfferPrice = offer[1].price;
+          currentOffer = new СurrentOffers(currentOfferTitle, currentOfferPrice);
+          newOffers.push(currentOffer);
+        }
+      }
+    } );
+    return newOffers;
+  };
+
+  const allOffers = createOffersForCurrentPoint(state, offers);
+
+  const createEventOffers = (waypointOffers) => Object.entries(waypointOffers).map( ( offer ) =>
+    `<div class="event__offer-selector">
+    <input class="event__offer-checkbox  visually-hidden" id="event-offer-${ type }" type="checkbox" name="event-offer-${ type }">
+    <label class="event__offer-label" for="event-offer-${ type }">
+    <span class="event__offer-title">${ offer[1].title }</span>
+    &plus;&euro;&nbsp;
+    <span class="event__offer-price">${ offer[1].price }</span>
+    </label>
+    </div>` ).join('');
+
+
+  const createDestinations = (town) => (
+    `<div class="event__field-group  event__field-group--destination">
+    <label class="event__label  event__type-output" for="event-destination-1">
+      ${ type }
+    </label>
+    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${ town }" list="destination-list-1">
+  <datalist id="destination-list-1">
+  ${ DESTINATION_POINT_NAMES.map( (point) => `<option value="${ point }" ${ point === town ? 'checked' : '' } ${ getCurrenPointId(town) }></option>` ).join('') }
+  </datalist>
+  </div>`);
+
   return (
     `<li class="trip-events__item">
 <form class="event event--edit" action="#" method="post">
@@ -13,7 +90,7 @@ const createEditFormElement = (point = {}, destinations) => {
     <div class="event__type-wrapper">
       <label class="event__type  event__type-btn" for="event-type-toggle-1">
         <span class="visually-hidden">Choose event type</span>
-        <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
+        <img class="event__type-icon" width="17" height="17" src="img/icons/${ type }.png" alt="Event type icon">
       </label>
       <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
@@ -22,65 +99,12 @@ const createEditFormElement = (point = {}, destinations) => {
           <legend class="visually-hidden">Event type</legend>
 
           <div class="event__type-item">
-            <input id="event-type-taxi-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="taxi">
-            <label class="event__type-label  event__type-label--taxi" for="event-type-taxi-1">Taxi</label>
-          </div>
-
-          <div class="event__type-item">
-            <input id="event-type-bus-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="bus">
-            <label class="event__type-label  event__type-label--bus" for="event-type-bus-1">Bus</label>
-          </div>
-
-          <div class="event__type-item">
-            <input id="event-type-train-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="train">
-            <label class="event__type-label  event__type-label--train" for="event-type-train-1">Train</label>
-          </div>
-
-          <div class="event__type-item">
-            <input id="event-type-ship-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="ship">
-            <label class="event__type-label  event__type-label--ship" for="event-type-ship-1">Ship</label>
-          </div>
-
-          <div class="event__type-item">
-            <input id="event-type-drive-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="drive">
-            <label class="event__type-label  event__type-label--drive" for="event-type-drive-1">Drive</label>
-          </div>
-
-          <div class="event__type-item">
-            <input id="event-type-flight-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="flight" checked>
-            <label class="event__type-label  event__type-label--flight" for="event-type-flight-1">Flight</label>
-          </div>
-
-          <div class="event__type-item">
-            <input id="event-type-check-in-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="check-in">
-            <label class="event__type-label  event__type-label--check-in" for="event-type-check-in-1">Check-in</label>
-          </div>
-
-          <div class="event__type-item">
-            <input id="event-type-sightseeing-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="sightseeing">
-            <label class="event__type-label  event__type-label--sightseeing" for="event-type-sightseeing-1">Sightseeing</label>
-          </div>
-
-          <div class="event__type-item">
-            <input id="event-type-restaurant-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="restaurant">
-            <label class="event__type-label  event__type-label--restaurant" for="event-type-restaurant-1">Restaurant</label>
+            ${ createEventTypeItem(type) }
           </div>
         </fieldset>
       </div>
     </div>
-
-    <div class="event__field-group  event__field-group--destination">
-      <label class="event__label  event__type-output" for="event-destination-1">
-        ${type}
-      </label>
-      <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${name}" list="destination-list-1">
-      <datalist id="destination-list-1">
-        <option value="Amsterdam"></option>
-        <option value="Geneva"></option>
-        <option value="Chamonix"></option>
-      </datalist>
-    </div>
-
+    ${ createDestinations(currentPointCityName === null ? name : currentPointCityName) } 
     <div class="event__field-group  event__field-group--time">
       <label class="visually-hidden" for="event-start-time-1">From</label>
       <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${ formatToTimeDateDual(dateFrom) }">
@@ -94,7 +118,7 @@ const createEditFormElement = (point = {}, destinations) => {
         <span class="visually-hidden">Price</span>
         &euro;
       </label>
-      <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${basePrice}">
+      <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${ basePrice }">
     </div>
 
     <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -103,66 +127,22 @@ const createEditFormElement = (point = {}, destinations) => {
   <section class="event__details">
     <section class="event__section  event__section--offers">
       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
-
-      <div class="event__available-offers">
-        <div class="event__offer-selector">
-          <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" checked>
-          <label class="event__offer-label" for="event-offer-luggage-1">
-            <span class="event__offer-title">Add luggage</span>
-            &plus;&euro;&nbsp;
-            <span class="event__offer-price">30</span>
-          </label>
-        </div>
-
-        <div class="event__offer-selector">
-          <input class="event__offer-checkbox  visually-hidden" id="event-offer-comfort-1" type="checkbox" name="event-offer-comfort" checked>
-          <label class="event__offer-label" for="event-offer-comfort-1">
-            <span class="event__offer-title">Switch to comfort class</span>
-            &plus;&euro;&nbsp;
-            <span class="event__offer-price">100</span>
-          </label>
-        </div>
-
-        <div class="event__offer-selector">
-          <input class="event__offer-checkbox  visually-hidden" id="event-offer-meal-1" type="checkbox" name="event-offer-meal">
-          <label class="event__offer-label" for="event-offer-meal-1">
-            <span class="event__offer-title">Add meal</span>
-            &plus;&euro;&nbsp;
-            <span class="event__offer-price">15</span>
-          </label>
-        </div>
-
-        <div class="event__offer-selector">
-          <input class="event__offer-checkbox  visually-hidden" id="event-offer-seats-1" type="checkbox" name="event-offer-seats">
-          <label class="event__offer-label" for="event-offer-seats-1">
-            <span class="event__offer-title">Choose seats</span>
-            &plus;&euro;&nbsp;
-            <span class="event__offer-price">5</span>
-          </label>
-        </div>
-
-        <div class="event__offer-selector">
-          <input class="event__offer-checkbox  visually-hidden" id="event-offer-train-1" type="checkbox" name="event-offer-train">
-          <label class="event__offer-label" for="event-offer-train-1">
-            <span class="event__offer-title">Travel by train</span>
-            &plus;&euro;&nbsp;
-            <span class="event__offer-price">40</span>
-          </label>
-        </div>
+      <div class="event__available-offers">  
+      ${ createEventOffers(allOffers) }
       </div>
     </section>
 
     <section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-      <p class="event__destination-description">${description}</p>
+      <p class="event__destination-description">${ getCurrenPointDescription(currentPointCityName) }</p>
 
       <div class="event__photos-container">
         <div class="event__photos-tape">
-          <img class="event__photo" src="${pictures[0].src}" alt="${pictures[0].description}">
-          <img class="event__photo" src="${pictures[1].src}" alt="${pictures[1].description}">
-          <img class="event__photo" src="${pictures[2].src}" alt="${pictures[2].description}">
-          <img class="event__photo" src="${pictures[3].src}" alt="${pictures[3].description}">
-          <img class="event__photo" src="${pictures[4].src}" alt="${pictures[4].description}">
+          <img class="event__photo" src="${ getCurrenPointPhotos(currentPointCityName)[0].src }" alt="${ getCurrenPointPhotos(currentPointCityName)[0].description }">
+          <img class="event__photo" src="${ getCurrenPointPhotos(currentPointCityName)[1].src }" alt="${ getCurrenPointPhotos(currentPointCityName)[1].description }">
+          <img class="event__photo" src="${ getCurrenPointPhotos(currentPointCityName)[2].src }" alt="${ getCurrenPointPhotos(currentPointCityName)[2].description }">
+          <img class="event__photo" src="${ getCurrenPointPhotos(currentPointCityName)[3].src }" alt="${ getCurrenPointPhotos(currentPointCityName)[3].description }">
+          <img class="event__photo" src="${ getCurrenPointPhotos(currentPointCityName)[4].src }" alt="${ getCurrenPointPhotos(currentPointCityName)[4].description }">
         </div>
       </div>
     </section>
@@ -172,22 +152,64 @@ const createEditFormElement = (point = {}, destinations) => {
   );
 };
 
-class EditFormView extends AbstractView {
-  #point = null;
+class EditFormView extends AbstractStatefulView {
   #destinations = null;
-  #element = null;
   #offers = null;
 
   constructor(point, destinations, offers) {
     super();
-    this.#point = point;
+    this._state = EditFormView.parseWaypointDataToState(point);
     this.#destinations = destinations;
     this.#offers = offers;
+    this.#setInnerHandlers();
   }
 
+
+  reset = (point) => {
+    this.updateElement(
+      EditFormView.parseWaypointDataToState(point),
+    );
+  };
+
   get template() {
-    return createEditFormElement(this.#point, this.#destinations, this.#offers);
+    return createEditFormElement(this._state, this.#destinations, this.#offers);
   }
+
+  _restoreHandlers = () => {
+    this.#setInnerHandlers();
+    this.setFormCancelHandler(this._callback.formCancel);
+    this.setFormSubmitHandler(this._callback.formSubmit);
+  };
+
+  #setInnerHandlers = () => {
+    this.element.querySelector('.event__type-list').addEventListener('change', this.#eventTypeChangeHandler);
+    this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
+  };
+
+  #destinationChangeHandler = (evt) => {
+    this.updateElement( {
+      currentPointCityName: evt.target.value,
+    } );
+  };
+
+  #eventTypeChangeHandler = (evt) => {
+    this.updateElement( {
+      type: evt.target.value,
+    } );
+  };
+
+  static parseWaypointDataToState = (point) => (
+    {
+      ...point,
+      currentPointCityName: null,
+    }
+  );
+
+  static parseStateToWaypointData = (state) => {
+    const waypointData = {...state};
+    delete waypointData.currentPointCityName;
+    return waypointData;
+  };
 
   setFormSubmitHandler(cb) {
     this._callback.formSubmit = cb;
@@ -196,7 +218,7 @@ class EditFormView extends AbstractView {
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this._callback.formSubmit();
+    this._callback.formSubmit(EditFormView.parseStateToWaypointData(this._state) );
   };
 
   setFormCancelHandler(cb) {
@@ -210,3 +232,43 @@ class EditFormView extends AbstractView {
 }
 
 export { EditFormView };
+
+
+/*  const createOffersForCurrentPoint = (currentPoint, currentOffers) => {
+    function СurrentOffers (title, price) {
+      this.title = title;
+      this.price = price;
+    }
+    const newOffers = [];
+    let currentOffer;
+    const offerType = currentOffers.filter( (element) => element.type === type );
+    const offersType = offerType[0].offers;
+    const offersTypeMap = new Map(Object.entries(offersType) );
+    const mapedOffersType = Object.entries(offersType).map( (id) => id[1].id );
+    state.offers = mapedOffersType;
+    currentPoint.offers.forEach( (id) => {
+      let currentOfferTitle;
+      let currentOfferPrice;
+      for (const offer of offersTypeMap) {
+        if (offer[1].id === id ) {
+          currentOfferTitle = offer[1].title;
+          currentOfferPrice = offer[1].price;
+          currentOffer = new СurrentOffers(currentOfferTitle, currentOfferPrice);
+          newOffers.push(currentOffer);
+        }
+      }
+    } );
+    return newOffers;
+  };
+
+  const allOffers = createOffersForCurrentPoint(state, offers);
+
+  const createEventOffers = (waypointOffers) => Object.entries(waypointOffers).map( ( offer ) =>
+    `<div class="event__offer-selector">
+    <input class="event__offer-checkbox  visually-hidden" id="event-offer-${ type }" type="checkbox" name="event-offer-${ type }">
+    <label class="event__offer-label" for="event-offer-${ type }">
+    <span class="event__offer-title">${ offer[1].title }</span>
+    &plus;&euro;&nbsp;
+    <span class="event__offer-price">${ offer[1].price }</span>
+    </label>
+    </div>` ).join('');*/

@@ -1,9 +1,9 @@
-import AbstractView from './abstract-view.js';
+import { AbstractView } from './abstract-view.js';
 
 /**
  * Абстрактный класс представления с состоянием
  */
-export default class AbstractStatefulView extends AbstractView {
+class AbstractStatefulView extends AbstractView {
   /** @type {Object} Объект состояния */
   _state = {};
 
@@ -50,3 +50,6 @@ export default class AbstractStatefulView extends AbstractView {
     this._restoreHandlers();
   };
 }
+
+export { AbstractStatefulView };
+

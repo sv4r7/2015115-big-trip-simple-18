@@ -44,6 +44,7 @@ class WaypointPresenter {
 
   resetView = () => {
     if (this.#state !== State.DEFAULT) {
+      this.#editFormComponent.reset(this.#waypoint);
       this.#replaceEditFormToWaypoint();
     }
   };
@@ -64,6 +65,7 @@ class WaypointPresenter {
   #escKeyDownHandler = (evt) => {
     if (isEscKey(evt) ) {
       evt.preventDefault();
+      this.#editFormComponent.reset(this.#waypoint);
       this.#replaceEditFormToWaypoint();
     }
   };
@@ -77,6 +79,7 @@ class WaypointPresenter {
   };
 
   #handleFormCancel = () => {
+    this.#editFormComponent.reset(this.#waypoint);
     this.#replaceEditFormToWaypoint();
   };
 

@@ -62,7 +62,6 @@ const createWaypointElement = (point, destinations, offers) => {
 class WaypointView extends AbstractView {
   #point = null;
   #destinations = null;
-  #element = null;
   #offers = null;
 
   constructor(point, destinations, offers) {
