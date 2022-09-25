@@ -1,7 +1,9 @@
 import { AbstractStatefulView } from '../framework/view/abstract-stateful-view.js';
-import { formatToTimeDateDual } from '../util.js';
+import { formatToTimeDateDual, formatToUtc } from '../util.js';
 import { OFFER_BY_TYPE, DESTINATION_POINT_NAMES } from '../mock/mock-data.js';
 import dayjs from 'dayjs';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
 
 const getCurrenPointId = (currentCityName, destinations) => {
   const cityName = destinations.find( (element) => element.name === currentCityName );
@@ -137,6 +139,8 @@ const createEditFormElement = (state, destinations, offers) => {
 class EditFormView extends AbstractStatefulView {
   #destinations = null;
   #offers = null;
+  #setDateFromPicker = null;
+  #setDateToPicker = null;
 
   constructor(point, destinations, offers) {
     super();
@@ -159,6 +163,7 @@ class EditFormView extends AbstractStatefulView {
 
   _restoreHandlers = () => {
     this.#setInnerHandlers();
+    this.#setDatePicker();
     this.setFormCancelHandler(this._callback.formCancel);
     this.setFormSubmitHandler(this._callback.formSubmit);
   };
@@ -167,31 +172,23 @@ class EditFormView extends AbstractStatefulView {
     this.element.querySelector('.event__type-list').addEventListener('change', this.#eventTypeChangeHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
     this.element.querySelector('.event__available-offers').addEventListener('change', this.#currentOffersCheckHandler);
+    this.#setDatePicker();
   };
 
-  #checkOffers = (target, stateOffers) => {
-    const currentStateOffers = stateOffers.slice();
-    let newStateOffers = [];
-
-    if (currentStateOffers.includes(+target) ) {
-
-      currentStateOffers.forEach( (offer) => {
-
-        if (offer !== +target) {
-          newStateOffers.push(offer);
-        }
-      } );
-    } else {
-      newStateOffers = currentStateOffers;
-      newStateOffers.push(+target);
+  #checkOffers = (target) => {
+    const currentStateOffers = this._state.offers.slice();
+    const offerId = +target;
+    if (currentStateOffers.includes(offerId) ) {
+      const index = currentStateOffers.findIndex( (element) => element === offerId );
+      return [...currentStateOffers.slice(0, index), ...currentStateOffers.slice(index + 1) ];
     }
-    return newStateOffers;
+    return [...currentStateOffers, offerId];
   };
 
   #currentOffersCheckHandler = (evt) => {
     const currentOfferId = evt.target.value;
     this.updateElement( {
-      offers: this.#checkOffers(currentOfferId, this._state.offers),
+      offers: this.#checkOffers(currentOfferId),
     } );
   };
 
@@ -240,6 +237,62 @@ class EditFormView extends AbstractStatefulView {
   #formCancelHandler = () => {
     this._callback.formCancel();
   };
+
+  #dateFromChangeHandler = ([selectedDate]) => {
+    this.updateElement( {
+      dateFrom: formatToUtc(selectedDate),
+    } );
+  };
+
+  #dateToChangeHandler = ([selectedDate]) => {
+    this.updateElement( {
+      dateTo: formatToUtc(selectedDate),
+    } );
+  };
+
+  #setDatePicker = () => {
+    const { dateFrom, dateTo } = this._state;
+    const startTime = this.element.querySelector('#event-start-time-1');
+    const endTime = this.element.querySelector('#event-end-time-1');
+
+    this.#setDateFromPicker = flatpickr(
+      startTime,
+      { enableTime: true,
+        dateFormat: 'd/m/y H:i',
+        // eslint-disable-next-line camelcase
+        time_24hr: true,
+        defaultDate: formatToTimeDateDual(dateFrom),
+        onChange: this.#dateFromChangeHandler,
+        minDate: 'today',
+      },
+    );
+
+    this.#setDateToPicker = flatpickr(
+      endTime,
+      { enableTime: true,
+        dateFormat: 'd/m/y H:i',
+        // eslint-disable-next-line camelcase
+        time_24hr: true,
+        defaultDate: formatToTimeDateDual(dateTo),
+        onChange: this.#dateToChangeHandler,
+      },
+    );
+  };
+
+  removeElement = () => {
+    super.removeElement();
+
+    if (this.#setDateFromPicker) {
+      this.#setDateFromPicker.destroy();
+      this.#setDateFromPicker = null;
+    }
+    if (this.#setDateToPicker) {
+      this.#setDateToPicker.destroy();
+      this.#setDateToPicker = null;
+    }
+  };
+
 }
 
 export { EditFormView };
+

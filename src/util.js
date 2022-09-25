@@ -21,9 +21,11 @@ const getRandomNumber = (startValue, endValue) => {
   }
 };
 
+const formatToUtc = (data) =>dayjs(data).format('YYYY-MM-DDTHH:MM:ss[.]SSS[Z]');
+
 const formatToTimeDate = (data) => dayjs(data).format('YYYY/MM/DD hh:mm');
 
-const formatToTimeDateDual = (data) => dayjs(data).format('YY/MM/DD HH:MM');
+const formatToTimeDateDual = (data) => dayjs(data).format('DD/MM/YY HH:MM');
 
 const formatToDate = (data) => dayjs(data).format('DD MMMM YYYY');
 
@@ -71,4 +73,4 @@ const filter = {
 export { getRandomNumber, getRandomIndex, formatToYear, formatToTimeDate };
 export { formatToDate, sortPrice };
 export { formatToDayMonth, formatMinutesToTime, formatToTimeDateDual };
-export { isEscKey, sortWaypointUp, filter };
+export { isEscKey, sortWaypointUp, filter, formatToUtc };
