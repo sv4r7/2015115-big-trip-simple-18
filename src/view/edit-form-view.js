@@ -3,27 +3,24 @@ import { formatToTimeDateDual } from '../util.js';
 import { OFFER_BY_TYPE, DESTINATION_POINT_NAMES } from '../mock/mock-data.js';
 import dayjs from 'dayjs';
 
-const getCurrenPointId = (currentCityName, destinations, state) => {
-  const cityName = destinations.filter( (element) => element.name === currentCityName );
-  const destinationId = (Object.entries(cityName).map( (id) => id[1].id ) );
-  state.destination = destinationId[0];
+const getCurrenPointId = (currentCityName, destinations) => {
+  const cityName = destinations.find( (element) => element.name === currentCityName );
+  return cityName.id;
 };
 
 const getCurrenPointDescription = (currentCityName, destinations, description) => {
-  const cityName = destinations.filter( (element) => element.name === currentCityName );
-  const destinationDescription = (Object.entries(cityName).map( (descript) => descript[1].description ) );
-  return !destinationDescription[0] ? description : destinationDescription[0];
+  const destination = destinations.find( (element) => element.name === currentCityName );
+  return destination?.description ?? description;
 };
 
 const getCurrenPointPhotos = (currentCityName, destinations, pictures) => {
-  const cityName = destinations.filter( (element) => element.name === currentCityName );
-  const destinationPhotos = (Object.entries(cityName).map( (photos) => photos[1].pictures ) );
-  return !currentCityName ? pictures : destinationPhotos[0];
+  const pointPictures = destinations.find( (element) => element.name === currentCityName );
+  return pointPictures?.pictures ?? pictures;
 };
 
 const createOffersForCurrentType = (currentPoint, offers) => {
-  const currentOffers = [offers.find( (element) => element.type === currentPoint.type)];
-  return currentOffers[0].offers.map( (offer) => ( {
+  const currentOffers = offers.find( (element) => element.type === currentPoint.type);
+  return currentOffers.offers.map( (offer) => ( {
     ...offer,
     checked: currentPoint.offers.includes(offer.id),
   } ) );
@@ -37,31 +34,29 @@ const createEventTypeItemTemplate = (currentType) => OFFER_BY_TYPE.map( (type) =
 
 const createEventOffersTemplate = (waypointOffers, type) => waypointOffers.map( ( offer ) =>
   `<div class="event__offer-selector">
-  <input class="event__offer-checkbox  visually-hidden" id="event-offer-${ type }" type="checkbox" name="event-offer-${ type }" value="${ offer.id }" ${ offer.checked ? 'checked' : '' }>
-  <label class="event__offer-label" for="event-offer-${ type }">
+  <input class="event__offer-checkbox  visually-hidden" id="event-offer-${ type }-${ offer.id }" type="checkbox" name="event-offer-${ type }" value="${ offer.id }" ${ offer.checked ? 'checked' : '' }>
+  <label class="event__offer-label" for="event-offer-${ type }-${ offer.id }">
   <span class="event__offer-title">${ offer.title }</span>
   &plus;&euro;&nbsp;
   <span class="event__offer-price">${ offer.price }</span>
   </label>
   </div>` ).join('');
 
-const createDestinationsTemplate = (city, type, destinations, state) => (
+const createDestinationsTemplate = (city, type) => (
   `<div class="event__field-group  event__field-group--destination">
     <label class="event__label  event__type-output" for="event-destination-1">
       ${ type }
     </label>
     <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${ city }" list="destination-list-1">
   <datalist id="destination-list-1">
-  ${ DESTINATION_POINT_NAMES.map( (point) => `<option value="${ point }" ${ point === city ? 'checked' : '' } ${ getCurrenPointId(city, destinations, state) }></option>` ).join('') }
+  ${ DESTINATION_POINT_NAMES.map( (point) => `<option value="${ point }" ${ point === city ? 'checked' : '' }></option>` ).join('') }
   </datalist>
   </div>`);
-
 
 const createEditFormElement = (state, destinations, offers) => {
   const { basePrice = '', dateFrom = dayjs() , dateTo = dayjs(), type, destination, currentPointCityName } = state;
   const currentPointDestination = destinations.filter( (element) => element.id === destination );
   const { description, name, pictures } = currentPointDestination[0];
-  console.log(state);
 
   const generatedOffersForCurrentType = createOffersForCurrentType(state, offers);
 
@@ -174,20 +169,43 @@ class EditFormView extends AbstractStatefulView {
     this.element.querySelector('.event__available-offers').addEventListener('change', this.#currentOffersCheckHandler);
   };
 
+  #checkOffers = (target, stateOffers) => {
+    const currentStateOffers = stateOffers.slice();
+    let newStateOffers = [];
+
+    if (currentStateOffers.includes(+target) ) {
+
+      currentStateOffers.forEach( (offer) => {
+
+        if (offer !== +target) {
+          newStateOffers.push(offer);
+        }
+      } );
+    } else {
+      newStateOffers = currentStateOffers;
+      newStateOffers.push(+target);
+    }
+    return newStateOffers;
+  };
+
   #currentOffersCheckHandler = (evt) => {
-    const currentId = evt.target.value;
-    console.log(currentId);
+    const currentOfferId = evt.target.value;
+    this.updateElement( {
+      offers: this.#checkOffers(currentOfferId, this._state.offers),
+    } );
   };
 
   #destinationChangeHandler = (evt) => {
     this.updateElement( {
       currentPointCityName: evt.target.value,
+      destination: getCurrenPointId(evt.target.value, this.#destinations),
     } );
   };
 
   #eventTypeChangeHandler = (evt) => {
     this.updateElement( {
       type: evt.target.value,
+      offers: [],
     } );
   };
 
@@ -225,43 +243,3 @@ class EditFormView extends AbstractStatefulView {
 }
 
 export { EditFormView };
-
-
-/*  const createOffersForCurrentPoint = (currentPoint, currentOffers) => {
-    function СurrentOffers (title, price) {
-      this.title = title;
-      this.price = price;
-    }
-    const newOffers = [];
-    let currentOffer;
-    const offerType = currentOffers.filter( (element) => element.type === type );
-    const offersType = offerType[0].offers;
-    const offersTypeMap = new Map(Object.entries(offersType) );
-    const mapedOffersType = Object.entries(offersType).map( (id) => id[1].id );
-    state.offers = mapedOffersType;
-    currentPoint.offers.forEach( (id) => {
-      let currentOfferTitle;
-      let currentOfferPrice;
-      for (const offer of offersTypeMap) {
-        if (offer[1].id === id ) {
-          currentOfferTitle = offer[1].title;
-          currentOfferPrice = offer[1].price;
-          currentOffer = new СurrentOffers(currentOfferTitle, currentOfferPrice);
-          newOffers.push(currentOffer);
-        }
-      }
-    } );
-    return newOffers;
-  };
-
-  const allOffers = createOffersForCurrentPoint(state, offers);
-
-  const createEventOffers = (waypointOffers) => Object.entries(waypointOffers).map( ( offer ) =>
-    `<div class="event__offer-selector">
-    <input class="event__offer-checkbox  visually-hidden" id="event-offer-${ type }" type="checkbox" name="event-offer-${ type }">
-    <label class="event__offer-label" for="event-offer-${ type }">
-    <span class="event__offer-title">${ offer[1].title }</span>
-    &plus;&euro;&nbsp;
-    <span class="event__offer-price">${ offer[1].price }</span>
-    </label>
-    </div>` ).join('');*/
