@@ -2,7 +2,7 @@ import { render, replace, remove } from '../framework/render.js';
 import { EditFormView } from '../view/edit-form-view.js';
 import { WaypointView } from '../view/waypoint-view.js';
 import { isEscKey } from '../util.js';
-import { State } from '../const.js';
+import { State, UserAction, UpdateType } from '../const.js';
 
 class WaypointPresenter {
 
@@ -10,14 +10,16 @@ class WaypointPresenter {
   #waypointComponent = null;
   #editFormComponent = null;
   #changeState = null;
+  #changeData = null;
 
   #waypoint = null;
   #destination = null;
   #offers = null;
   #state = State.DEFAULT;
 
-  constructor(waypointsContainer, changeState) {
+  constructor(waypointsContainer, changeData, changeState) {
     this.#waypointsContainer = waypointsContainer;
+    this.#changeData = changeData;
     this.#changeState = changeState;
   }
 
@@ -33,6 +35,7 @@ class WaypointPresenter {
     this.#waypointComponent.setRollupButtonClicklHandler(this.#handleRollupButtonClick);
     this.#editFormComponent.setFormSubmitHandler(this.#handleFormSubmit);
     this.#editFormComponent.setFormCancelHandler(this.#handleFormCancel);
+    this.#editFormComponent.setFormDeleteHandler(this.#handleFormDelete);
 
     render(this.#waypointComponent, this.#waypointsContainer);
   }
@@ -74,8 +77,22 @@ class WaypointPresenter {
     this.#replaceWaypointToEditForm();
   };
 
-  #handleFormSubmit = () => {
+  #handleFormSubmit = (waypoint) => {
+    this.#changeData (
+      UserAction.UPDATE_ROUTEPOINT,
+      UpdateType.MINOR,
+      waypoint,
+    );
+
     this.#replaceEditFormToWaypoint();
+  };
+
+  #handleFormDelete = (waypoint) => {
+    this.#changeData(
+      UserAction.DELETE_ROUTEPOINT,
+      UpdateType.MINOR,
+      waypoint,
+    );
   };
 
   #handleFormCancel = () => {

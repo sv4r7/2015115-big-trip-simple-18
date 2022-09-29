@@ -36,4 +36,7 @@ const generateRoutePoint = () => (
   }
 );
 
-export { generateRoutePoint, destinations };
+export { generateRoutePoint,
+  destinations,
+  getOfferId,
+};
