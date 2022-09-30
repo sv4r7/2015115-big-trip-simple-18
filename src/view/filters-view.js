@@ -1,26 +1,26 @@
 import { AbstractView } from '../framework/view/abstract-view.js';
 
-const createNewFormFilterItemTemplate = (filter, isChecked) => {
-  const { name, count } = filter;
+const createNewFormFilterItemTemplate = (filter, currentFilterType) => {
+  const { type, name, count } = filter;
 
   return (
     `<div class="trip-filters__filter">
-    <input id="filter-${name}" 
+    <input id="filter-${ name }" 
     class="trip-filters__filter-input  visually-hidden" 
     type="radio" name="trip-filter" 
-    value="${name}" 
-    ${isChecked ? 'checked' : ''}
-    ${count === 0 ? 'disabled' : ''}
+    value="${ name }" 
+    ${ type === currentFilterType ? 'checked' : '' }
+    ${ count === 0 ? 'disabled' : '' }
     >
     <label class="trip-filters__filter-label" 
-    for="filter-${name}">${name}</label>
+    for="filter-${ name }">${ name }</label>
   </div>`
   );
 };
 
-const createNewFormFiltersTemplate = (filterItems) => {
+const createNewFormFiltersTemplate = (filterItems, currentFilterType) => {
   const filterItemsTemplate = filterItems
-    .map( (filter, index) => createNewFormFilterItemTemplate(filter, index === 0) )
+    .map( (filter) => createNewFormFilterItemTemplate(filter, currentFilterType) )
     .join('');
 
   return (
@@ -31,19 +31,30 @@ const createNewFormFiltersTemplate = (filterItems) => {
   );
 };
 
-
 class FormFiltersView extends AbstractView {
-
   #filters = null;
+  #currentFilter = null;
 
-  constructor(filters) {
+  constructor (filters, currentFilterType) {
     super();
     this.#filters = filters;
+    this.#currentFilter = currentFilterType;
+
   }
 
   get template() {
-    return createNewFormFiltersTemplate(this.#filters);
+    return createNewFormFiltersTemplate(this.#filters, this.#currentFilter);
   }
+
+  setFilterTypeChangeHandler = (cb) => {
+    this._callback.filterTypeChange = cb;
+    this.element.addEventListener('change', this.#filterTypeChangeHandler);
+  };
+
+  #filterTypeChangeHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.filterTypeChange(evt.target.value);
+  };
 
 }
 

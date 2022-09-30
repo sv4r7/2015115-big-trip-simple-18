@@ -70,7 +70,16 @@ const filter = {
   [FilterType.FUTURE]: (waypoints) => waypoints.filter( (waypoint) => isFutureWaypoint(waypoint) ),
 };
 
-export { getRandomNumber, getRandomIndex, formatToYear, formatToTimeDate };
-export { formatToDate, sortPrice };
-export { formatToDayMonth, formatMinutesToTime, formatToTimeDateDual };
-export { isEscKey, sortWaypointUp, filter, formatToUtc };
+export { getRandomNumber,
+  getRandomIndex,
+  formatToYear,
+  formatToTimeDate,
+  formatToDate,
+  sortPrice,
+  formatToDayMonth,
+  formatMinutesToTime,
+  formatToTimeDateDual,
+  isEscKey,
+  sortWaypointUp,
+  filter,
+  formatToUtc };

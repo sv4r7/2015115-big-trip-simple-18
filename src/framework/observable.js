@@ -1,7 +1,7 @@
 /**
  * Класс, реализующий паттерн Наблюдатель.
  */
-export default class Observable {
+class Observable {
   /** @type {Set<observerCallback>} Множество функций типа observerCallback */
   #observers = new Set();
 
@@ -37,3 +37,5 @@ export default class Observable {
  * @param {*} event Тип события
  * @param {*} [payload] Дополнительная информация
  */
+
+export { Observable };

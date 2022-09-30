@@ -4,6 +4,12 @@ import { OFFER_BY_TYPE, DESTINATION_POINT_NAMES } from '../mock/mock-data.js';
 import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
+import he from 'he';
+
+const getButtonCancelName = (state) => state ? 'Delete' : 'Cancel';
+
+const renderButtonCancel = (state) => state ? (`<button class="event__rollup-btn" type="button">
+  <span class="visually-hidden">Open event</span>`) : '';
 
 const getCurrenPointId = (currentCityName, destinations) => {
   const cityName = destinations.find( (element) => element.name === currentCityName );
@@ -49,15 +55,20 @@ const createDestinationsTemplate = (city, type) => (
     <label class="event__label  event__type-output" for="event-destination-1">
       ${ type }
     </label>
-    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${ city }" list="destination-list-1">
+    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${ he.encode(city) }" list="destination-list-1">
   <datalist id="destination-list-1">
   ${ DESTINATION_POINT_NAMES.map( (point) => `<option value="${ point }" ${ point === city ? 'checked' : '' }></option>` ).join('') }
   </datalist>
   </div>`);
 
 const createEditFormElement = (state, destinations, offers) => {
-  const { basePrice = '', dateFrom = dayjs() , dateTo = dayjs(), type, destination, currentPointCityName } = state;
-  const currentPointDestination = destinations.filter( (element) => element.id === destination );
+  const { basePrice = '', dateFrom = dayjs() , dateTo = dayjs(), type, currentPointCityName } = state;
+  let updateState = true;
+  if (!state.destination) {
+    updateState = false;
+    state.destination = destinations[0].id;
+  }
+  const currentPointDestination = destinations.filter( (element) => element.id === state.destination );
   const { description, name, pictures } = currentPointDestination[0];
 
   const generatedOffersForCurrentType = createOffersForCurrentType(state, offers);
@@ -97,11 +108,12 @@ const createEditFormElement = (state, destinations, offers) => {
         <span class="visually-hidden">Price</span>
         &euro;
       </label>
-      <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${ basePrice }">
+      <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${ basePrice }">
     </div>
 
     <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-    <button class="event__reset-btn" type="reset">Cancel</button>
+    <button class="event__reset-btn" type="reset">${ getButtonCancelName(updateState) }</button>
+    ${ renderButtonCancel(updateState) } 
   </header>
   <section class="event__details">
     <section class="event__section  event__section--offers">
@@ -166,13 +178,25 @@ class EditFormView extends AbstractStatefulView {
     this.#setDatePicker();
     this.setFormCancelHandler(this._callback.formCancel);
     this.setFormSubmitHandler(this._callback.formSubmit);
+    this.setFormDeleteHandler(this._callback.formDelete);
   };
 
   #setInnerHandlers = () => {
     this.element.querySelector('.event__type-list').addEventListener('change', this.#eventTypeChangeHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
     this.element.querySelector('.event__available-offers').addEventListener('change', this.#currentOffersCheckHandler);
+    this.element.querySelector('#event-price-1').addEventListener('change', this.#currentPriceChange);
     this.#setDatePicker();
+  };
+
+  #currentPriceChange = (evt) => {
+    let currentPrice = +evt.target.value;
+    if (currentPrice < 0) {
+      currentPrice = Math.abs(currentPrice);
+    }
+    this.updateElement( {
+      basePrice: currentPrice,
+    } );
   };
 
   #checkOffers = (target) => {
@@ -193,8 +217,13 @@ class EditFormView extends AbstractStatefulView {
   };
 
   #destinationChangeHandler = (evt) => {
+    const currentCityName = evt.target.value;
+    if (!DESTINATION_POINT_NAMES.includes(currentCityName) ) {
+      this.value = evt.target.defaultValue;
+      return;
+    }
     this.updateElement( {
-      currentPointCityName: evt.target.value,
+      currentPointCityName: currentCityName,
       destination: getCurrenPointId(evt.target.value, this.#destinations),
     } );
   };
@@ -229,9 +258,19 @@ class EditFormView extends AbstractStatefulView {
     this._callback.formSubmit(EditFormView.parseStateToWaypointData(this._state) );
   };
 
+  setFormDeleteHandler(cb) {
+    this._callback.formDelete = cb;
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#formDeleteHandler);
+  }
+
+  #formDeleteHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.formDelete(EditFormView.parseStateToWaypointData(this._state) );
+  };
+
   setFormCancelHandler(cb) {
     this._callback.formCancel = cb;
-    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#formCancelHandler);
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formCancelHandler);
   }
 
   #formCancelHandler = () => {
@@ -259,8 +298,7 @@ class EditFormView extends AbstractStatefulView {
       startTime,
       { enableTime: true,
         dateFormat: 'd/m/y H:i',
-        // eslint-disable-next-line camelcase
-        time_24hr: true,
+        'time_24hr': true,
         defaultDate: formatToTimeDateDual(dateFrom),
         onChange: this.#dateFromChangeHandler,
         minDate: 'today',
@@ -271,12 +309,21 @@ class EditFormView extends AbstractStatefulView {
       endTime,
       { enableTime: true,
         dateFormat: 'd/m/y H:i',
-        // eslint-disable-next-line camelcase
-        time_24hr: true,
+        'time_24hr': true,
         defaultDate: formatToTimeDateDual(dateTo),
         onChange: this.#dateToChangeHandler,
+        minDate: this.#setDateFromPicker.selectedDates[0],
       },
     );
+
+    this.#setDateFromPicker.config.onChange.push( () => {
+      this.#setDateToPicker.set('minDate', this.#setDateFromPicker.selectedDates[0] );
+    } );
+
+    if (dayjs(this.#setDateFromPicker.selectedDates[0] ).isAfter(dayjs(this.#setDateToPicker.selectedDates[0] ) ) ) {
+      this.#setDateToPicker.setDate(this.#setDateFromPicker.selectedDates[0] );
+    }
+
   };
 
   removeElement = () => {
@@ -295,4 +342,5 @@ class EditFormView extends AbstractStatefulView {
 }
 
 export { EditFormView };
+
 
