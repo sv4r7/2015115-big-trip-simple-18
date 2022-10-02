@@ -3,7 +3,7 @@ import './ui-blocker.css';
 /**
  * Класс для блокировки интерфейса
  */
-export default class UiBlocker {
+class UiBlocker {
   /** @type {number} Время до блокировки интерфейса в миллисекундах */
   #lowerLimit;
 
@@ -72,3 +72,5 @@ export default class UiBlocker {
     this.#element.classList.remove('ui-blocker--on');
   };
 }
+
+export { UiBlocker };

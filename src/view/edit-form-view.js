@@ -1,15 +1,10 @@
 import { AbstractStatefulView } from '../framework/view/abstract-stateful-view.js';
 import { formatToTimeDateDual, formatToUtc } from '../util.js';
-import { OFFER_BY_TYPE, DESTINATION_POINT_NAMES } from '../mock/mock-data.js';
+import { OFFER_BY_TYPE } from '../const.js';
 import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 import he from 'he';
-
-const getButtonCancelName = (state) => state ? 'Delete' : 'Cancel';
-
-const renderButtonCancel = (state) => state ? (`<button class="event__rollup-btn" type="button">
-  <span class="visually-hidden">Open event</span>`) : '';
 
 const getCurrenPointId = (currentCityName, destinations) => {
   const cityName = destinations.find( (element) => element.name === currentCityName );
@@ -21,11 +16,6 @@ const getCurrenPointDescription = (currentCityName, destinations, description) =
   return destination?.description ?? description;
 };
 
-const getCurrenPointPhotos = (currentCityName, destinations, pictures) => {
-  const pointPictures = destinations.find( (element) => element.name === currentCityName );
-  return pointPictures?.pictures ?? pictures;
-};
-
 const createOffersForCurrentType = (currentPoint, offers) => {
   const currentOffers = offers.find( (element) => element.type === currentPoint.type);
   return currentOffers.offers.map( (offer) => ( {
@@ -33,6 +23,21 @@ const createOffersForCurrentType = (currentPoint, offers) => {
     checked: currentPoint.offers.includes(offer.id),
   } ) );
 };
+
+const getCurrentPointPhotos = (pictures) => pictures.map( (picture) => `<img class="event__photo" src="${ picture.src }" alt="${ picture.description }">`).join('');
+
+const getButtonCancelName = (state, isDeleting) => {
+  if (!state) {
+    return 'Cancel';
+  }
+  if (isDeleting) {
+    return 'Deleting...';
+  }
+  return 'Delete';
+};
+
+const renderButtonCancel = (state, isDisabled) => state ? (`<button class="event__rollup-btn" type="button" ${ isDisabled ? 'disabled' : '' }>
+  <span class="visually-hidden">Open event</span>`) : '';
 
 const createEventTypeItemTemplate = (currentType) => OFFER_BY_TYPE.map( (type) => `<input id="event-type-${ type }" 
   class="event__type-input  
@@ -50,24 +55,29 @@ const createEventOffersTemplate = (waypointOffers, type) => waypointOffers.map( 
   </label>
   </div>` ).join('');
 
-const createDestinationsTemplate = (city, type) => (
+const createDestinationsTemplate = (destinations, city, type) => (
   `<div class="event__field-group  event__field-group--destination">
     <label class="event__label  event__type-output" for="event-destination-1">
       ${ type }
     </label>
     <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${ he.encode(city) }" list="destination-list-1">
   <datalist id="destination-list-1">
-  ${ DESTINATION_POINT_NAMES.map( (point) => `<option value="${ point }" ${ point === city ? 'checked' : '' }></option>` ).join('') }
+  ${ destinations.map( (point) => `<option value="${ point }" ${ point === city ? 'checked' : '' }></option>` ).join('') }
   </datalist>
   </div>`);
 
-const createEditFormElement = (state, destinations, offers) => {
+const createEditFormElement = (state, destinations, offers, isSaving, isDeleting, isDisabled) => {
   const { basePrice = '', dateFrom = dayjs() , dateTo = dayjs(), type, currentPointCityName } = state;
+
   let updateState = true;
+
   if (!state.destination) {
     updateState = false;
     state.destination = destinations[0].id;
   }
+
+  const allDestinationsCityNames = destinations.map( (cityName) => cityName.name);
+
   const currentPointDestination = destinations.filter( (element) => element.id === state.destination );
   const { description, name, pictures } = currentPointDestination[0];
 
@@ -94,7 +104,7 @@ const createEditFormElement = (state, destinations, offers) => {
         </fieldset>
       </div>
     </div>
-    ${ createDestinationsTemplate(currentPointCityName === null ? name : currentPointCityName, type, destinations, state) } 
+    ${ createDestinationsTemplate(allDestinationsCityNames, name, type ) } 
     <div class="event__field-group  event__field-group--time">
       <label class="visually-hidden" for="event-start-time-1">From</label>
       <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${ formatToTimeDateDual(dateFrom) }">
@@ -111,9 +121,9 @@ const createEditFormElement = (state, destinations, offers) => {
       <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${ basePrice }">
     </div>
 
-    <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-    <button class="event__reset-btn" type="reset">${ getButtonCancelName(updateState) }</button>
-    ${ renderButtonCancel(updateState) } 
+    <button class="event__save-btn  btn  btn--blue" type="submit" ${ isDisabled ? 'disabled' : '' }>${ isSaving ? 'Saving..' : 'Save' }</button>
+    <button class="event__reset-btn" type="reset" ${ isDisabled ? 'disabled' : '' }>${ getButtonCancelName(updateState, isDeleting) }</button>
+    ${ renderButtonCancel(updateState, isDisabled) } 
   </header>
   <section class="event__details">
     <section class="event__section  event__section--offers">
@@ -129,16 +139,7 @@ const createEditFormElement = (state, destinations, offers) => {
 
       <div class="event__photos-container">
         <div class="event__photos-tape">
-          <img class="event__photo" src="${ getCurrenPointPhotos(currentPointCityName, destinations, pictures)[0].src }" 
-          alt="${ getCurrenPointPhotos(currentPointCityName, destinations, pictures)[0].description }">
-          <img class="event__photo" src="${ getCurrenPointPhotos(currentPointCityName, destinations, pictures)[1].src }" 
-          alt="${ getCurrenPointPhotos(currentPointCityName, destinations, pictures)[1].description }">
-          <img class="event__photo" src="${ getCurrenPointPhotos(currentPointCityName, destinations, pictures)[2].src }" 
-          alt="${ getCurrenPointPhotos(currentPointCityName, destinations, pictures)[2].description }">
-          <img class="event__photo" src="${ getCurrenPointPhotos(currentPointCityName, destinations, pictures)[3].src }" 
-          alt="${ getCurrenPointPhotos(currentPointCityName, destinations, pictures)[3].description }">
-          <img class="event__photo" src="${ getCurrenPointPhotos(currentPointCityName, destinations, pictures)[4].src }" 
-          alt="${ getCurrenPointPhotos(currentPointCityName, destinations, pictures)[4].description }">
+         ${ getCurrentPointPhotos(pictures) }
         </div>
       </div>
     </section>
@@ -218,7 +219,8 @@ class EditFormView extends AbstractStatefulView {
 
   #destinationChangeHandler = (evt) => {
     const currentCityName = evt.target.value;
-    if (!DESTINATION_POINT_NAMES.includes(currentCityName) ) {
+    const allDistinationNames = this.#destinations.map( (point) => point.name );
+    if (!allDistinationNames.includes(currentCityName) ) {
       this.value = evt.target.defaultValue;
       return;
     }
@@ -239,12 +241,18 @@ class EditFormView extends AbstractStatefulView {
     {
       ...point,
       currentPointCityName: null,
+      isDisabled: false,
+      isDeleting: false,
+      isSaving: false,
     }
   );
 
   static parseStateToWaypointData = (state) => {
     const waypointData = {...state};
     delete waypointData.currentPointCityName;
+    delete waypointData.isDeleting;
+    delete waypointData.isSaving;
+    delete waypointData.isDisabled;
     return waypointData;
   };
 
@@ -342,5 +350,4 @@ class EditFormView extends AbstractStatefulView {
 }
 
 export { EditFormView };
-
 
