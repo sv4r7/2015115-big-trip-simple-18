@@ -102,8 +102,6 @@ class WaypointPresenter {
       UpdateType.MINOR,
       waypoint,
     );
-
-    this.#replaceEditFormToWaypoint();
   };
 
   #handleFormDelete = (waypoint) => {

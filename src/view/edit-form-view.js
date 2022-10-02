@@ -36,8 +36,8 @@ const getButtonCancelName = (state, isDeleting) => {
   return 'Delete';
 };
 
-const renderButtonCancel = (state, isDisabled) => state ? (`<button class="event__rollup-btn" type="button" ${ isDisabled ? 'disabled' : '' }>
-  <span class="visually-hidden">Open event</span>`) : '';
+const renderButtonCancel = (state, isDisabled) => state ? `<button class="event__rollup-btn" type="button" ${ isDisabled ? 'disabled' : '' }>
+  <span class="visually-hidden">Open event</span>` : '';
 
 const createEventTypeItemTemplate = (currentType) => OFFER_BY_TYPE.map( (type) => `<input id="event-type-${ type }" 
   class="event__type-input  
@@ -66,13 +66,10 @@ const createDestinationsTemplate = (destinations, city, type) => (
   </datalist>
   </div>`);
 
-const createEditFormElement = (state, destinations, offers, isSaving, isDeleting, isDisabled) => {
-  const { basePrice = '', dateFrom = dayjs() , dateTo = dayjs(), type, currentPointCityName } = state;
+const createEditFormElement = (state, destinations, offers, updateState) => {
+  const { basePrice = '', dateFrom = dayjs() , dateTo = dayjs(), type, currentPointCityName, isDeleting, isDisabled, isSaving } = state;
 
-  let updateState = true;
-
-  if (!state.destination) {
-    updateState = false;
+  if (!updateState) {
     state.destination = destinations[0].id;
   }
 
@@ -121,7 +118,7 @@ const createEditFormElement = (state, destinations, offers, isSaving, isDeleting
       <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${ basePrice }">
     </div>
 
-    <button class="event__save-btn  btn  btn--blue" type="submit" ${ isDisabled ? 'disabled' : '' }>${ isSaving ? 'Saving..' : 'Save' }</button>
+    <button class="event__save-btn  btn  btn--blue" type="submit" ${ isDisabled ? 'disabled' : '' }>${ isSaving ? 'Saving...' : 'Save' }</button>
     <button class="event__reset-btn" type="reset" ${ isDisabled ? 'disabled' : '' }>${ getButtonCancelName(updateState, isDeleting) }</button>
     ${ renderButtonCancel(updateState, isDisabled) } 
   </header>
@@ -154,15 +151,24 @@ class EditFormView extends AbstractStatefulView {
   #offers = null;
   #setDateFromPicker = null;
   #setDateToPicker = null;
+  #updateState = null;
 
   constructor(point, destinations, offers) {
     super();
     this._state = EditFormView.parseWaypointDataToState(point);
     this.#destinations = destinations;
     this.#offers = offers;
+    this.#getUpdateState(this._state.id);
     this.#setInnerHandlers();
   }
 
+  #getUpdateState = (stateId) => {
+    if (stateId) {
+      this.#updateState = true;
+    } else {
+      this.#updateState = false;
+    }
+  };
 
   reset = (point) => {
     this.updateElement(
@@ -171,7 +177,7 @@ class EditFormView extends AbstractStatefulView {
   };
 
   get template() {
-    return createEditFormElement(this._state, this.#destinations, this.#offers);
+    return createEditFormElement(this._state, this.#destinations, this.#offers, this.#updateState);
   }
 
   _restoreHandlers = () => {
@@ -277,8 +283,10 @@ class EditFormView extends AbstractStatefulView {
   };
 
   setFormCancelHandler(cb) {
-    this._callback.formCancel = cb;
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formCancelHandler);
+    if (this.#updateState) {
+      this._callback.formCancel = cb;
+      this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formCancelHandler);
+    }
   }
 
   #formCancelHandler = () => {

@@ -170,11 +170,11 @@ class RoutePresenter {
         }
         break;
       case UserAction.ADD_ROUTEPOINT:
-        this.#waypointPresenter.setSaving();
+        this.#newWaypointPresenter.setSaving();
         try {
           this.#routeModel.addRoute(updateType, update);
         } catch (err) {
-          this.#waypointPresenter.get(update.id).setAborting();
+          this.#newWaypointPresenter.get(update.id).setAborting();
         }
         break;
       case UserAction.DELETE_ROUTEPOINT:
