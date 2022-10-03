@@ -318,6 +318,12 @@ class EditFormView extends AbstractStatefulView {
         defaultDate: formatToTimeDateDual(dateFrom),
         onChange: this.#dateFromChangeHandler,
         minDate: 'today',
+        disable: [
+          {
+            from: '',
+            to: 'today',
+          }
+        ],
       },
     );
 
@@ -329,6 +335,12 @@ class EditFormView extends AbstractStatefulView {
         defaultDate: formatToTimeDateDual(dateTo),
         onChange: this.#dateToChangeHandler,
         minDate: this.#setDateFromPicker.selectedDates[0],
+        disable: [
+          {
+            from: '',
+            to: 'minDate',
+          }
+        ],
       },
     );
 

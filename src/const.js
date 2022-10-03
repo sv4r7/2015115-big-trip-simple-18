@@ -4,7 +4,7 @@ const routeMainContainerElement = document.querySelector('.trip-main');
 const routeControlsFiltersContainerElement = routeMainContainerElement.querySelector('.trip-controls__filters');
 const routeEventSectionElement = document.querySelector('.trip-events');
 
-const AUTHORIZATION = 'Basic hS2sfS44g6hplkj4';
+const AUTHORIZATION = 'Basic hS2sfS44g6hpljkl';
 const END_POINT = 'https://18.ecmascript.pages.academy/big-trip/';
 
 const Method = {

@@ -164,7 +164,7 @@ class RoutePresenter {
       case UserAction.UPDATE_ROUTEPOINT:
         this.#waypointPresenter.get(update.id).setSaving();
         try {
-          await this.#routeModel.updateRoute(updateType, update);
+          await this.#routeModel.updateWaypoint(updateType, update);
         } catch (err) {
           this.#waypointPresenter.get(update.id).setAborting();
         }
@@ -172,7 +172,7 @@ class RoutePresenter {
       case UserAction.ADD_ROUTEPOINT:
         this.#newWaypointPresenter.setSaving();
         try {
-          this.#routeModel.addRoute(updateType, update);
+          this.#routeModel.addWaypoint(updateType, update);
         } catch (err) {
           this.#newWaypointPresenter.get(update.id).setAborting();
         }
@@ -180,7 +180,7 @@ class RoutePresenter {
       case UserAction.DELETE_ROUTEPOINT:
         this.#waypointPresenter.get(update.id).setDeleting();
         try {
-          this.#routeModel.deleteRoute(updateType, update);
+          this.#routeModel.deleteWaypoint(updateType, update);
         } catch (err) {
           this.#waypointPresenter.get(update.id).setAborting();
         }

@@ -41,7 +41,7 @@ class RouteModel extends Observable {
     return this.#offers;
   }
 
-  updateRoute = async (updateType, update) => {
+  updateWaypoint = async (updateType, update) => {
     const index = this.#routes.findIndex( (route) => route.id === update.id );
     if (index === -1) {
       throw new Error ('Can\'t update unexisting routepoint');
@@ -61,7 +61,7 @@ class RouteModel extends Observable {
     }
   };
 
-  addRoute = async (updateType, update) => {
+  addWaypoint = async (updateType, update) => {
     try {
       const response = await this.#waypointsApiService.addWaypoint(update);
       const newRoute = this.#adaptToClient(response);
@@ -72,7 +72,7 @@ class RouteModel extends Observable {
     }
   };
 
-  deleteRoute = async (updateType, update) => {
+  deleteWaypoint = async (updateType, update) => {
     const index = this.#routes.findIndex( (route) => route.id === update.id);
 
     if (index === -1) {
