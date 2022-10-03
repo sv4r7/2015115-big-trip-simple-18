@@ -1,7 +1,7 @@
 /**
  * Класс для отправки запросов к серверу
  */
-export default class ApiService {
+class ApiService {
   /**
    * @param {string} endPoint Адрес сервера
    * @param {string} authorization Авторизационный токен
@@ -66,3 +66,5 @@ export default class ApiService {
     throw err;
   };
 }
+
+export { ApiService };

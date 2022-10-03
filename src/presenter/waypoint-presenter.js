@@ -29,6 +29,9 @@ class WaypointPresenter {
     this.#destination = destination;
     this.#offers = offers;
 
+    const prevWaypointComponent = this.#waypointComponent;
+    const prevEditFormComponent = this.#editFormComponent;
+
     this.#waypointComponent = new WaypointView(waypoint, destination, offers);
     this.#editFormComponent = new EditFormView(waypoint, destination, offers);
 
@@ -37,7 +40,23 @@ class WaypointPresenter {
     this.#editFormComponent.setFormCancelHandler(this.#handleFormCancel);
     this.#editFormComponent.setFormDeleteHandler(this.#handleFormDelete);
 
-    render(this.#waypointComponent, this.#waypointsContainer);
+    if (prevWaypointComponent === null || prevEditFormComponent === null) {
+      render(this.#waypointComponent, this.#waypointsContainer);
+      return;
+    }
+
+    if (this.#state === State.DEFAULT) {
+      replace(this.#waypointComponent, prevWaypointComponent);
+    }
+
+    if (this.#state === State.EDITING) {
+      replace(this.#waypointComponent, prevEditFormComponent);
+      this.#state = State.DEFAULT;
+    }
+
+    remove(prevWaypointComponent);
+    remove(prevEditFormComponent);
+
   }
 
   destroy = () => {
@@ -83,8 +102,6 @@ class WaypointPresenter {
       UpdateType.MINOR,
       waypoint,
     );
-
-    this.#replaceEditFormToWaypoint();
   };
 
   #handleFormDelete = (waypoint) => {
@@ -98,6 +115,40 @@ class WaypointPresenter {
   #handleFormCancel = () => {
     this.#editFormComponent.reset(this.#waypoint);
     this.#replaceEditFormToWaypoint();
+  };
+
+  setSaving = () => {
+    if (this.#state === State.EDITING) {
+      this.#editFormComponent.updateElement( {
+        isDisabled: true,
+        isSaving: true,
+      } );
+    }
+  };
+
+  setDeleting = () => {
+    if (this.#state === State.EDITING) {
+      this.#editFormComponent.updateElement( {
+        isDisabled: true,
+        isDeleting: true,
+      } );
+    }
+  };
+
+  setAborting = () => {
+    if (this.#state === State.DEFAULT) {
+      this.#editFormComponent.shake();
+      return;
+    }
+
+    const resetFormState = () => {
+      this.#editFormComponent.updateElement( {
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      } );
+    };
+    this.#editFormComponent.shake(resetFormState);
   };
 
 }

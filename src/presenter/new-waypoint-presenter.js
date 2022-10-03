@@ -1,6 +1,5 @@
 import { remove, render, RenderPosition } from '../framework/render.js';
 import { EditFormView } from '../view/edit-form-view.js';
-import { nanoid } from 'nanoid';
 import { UserAction, UpdateType, EMPTY_WAYPOINT } from '../const.js';
 import { isEscKey } from '../util.js';
 
@@ -43,13 +42,30 @@ class NewWaypointPresenter {
 
   };
 
+  setSaving = () => {
+    this.#editFormComponent.updateElement( {
+      isDisabled: true,
+      isSaving: true,
+    } );
+  };
+
+  setAborting = () => {
+    const resetFormState = () => {
+      this.#editFormComponent.updateElement( {
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      } );
+    };
+    this.#editFormComponent.shake(resetFormState);
+  };
+
   #handleFormSubmit = (waypoint) => {
     this.#changeData(
       UserAction.ADD_ROUTEPOINT,
       UpdateType.MINOR,
-      {id : nanoid(), ...waypoint },
+      waypoint,
     );
-    this.destroy();
   };
 
   #handleFormDelete = () => {

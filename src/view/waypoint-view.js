@@ -1,27 +1,28 @@
 import { AbstractView } from '../framework/view/abstract-view.js';
 import { formatToTimeDate, formatToDate, formatToDayMonth, formatMinutesToTime } from '../util.js';
 
+const getEventOfferTemplate = (title, price) => (
+  `<li class="event__offer">
+<span class="event__offer-title">${ title }</span>
+&plus;&euro;&nbsp;
+<span class="event__offer-price">${ price }</span>
+</li>`
+);
+
 const createOffers = (point, offers) => {
   let currentOffers = '';
-  const offerType = offers.filter( (element) => element.type === point.type );
-  const offersType = offerType[0].offers;
-  const offersTypeMap = new Map(Object.entries(offersType) );
+  const offerType = offers.find( (element) => element.type === point.type);
+  const offersType = offerType.offers;
   point.offers.forEach( (id) => {
     let currentOfferTitle;
     let currentOfferPrice;
-    for (const offer of offersTypeMap) {
-      if (offer[1].id === id ) {
-        currentOfferTitle = offer[1].title;
-        currentOfferPrice = offer[1].price;
-        currentOffers += (
-          `<li class="event__offer">
-          <span class="event__offer-title">${ currentOfferTitle }</span>
-          &plus;&euro;&nbsp;
-          <span class="event__offer-price">${ currentOfferPrice }</span>
-          </li>`
-        );
+    offersType.map( (element) => {
+      if (element.id === id ) {
+        currentOfferTitle = element.title;
+        currentOfferPrice = element.price;
+        currentOffers += getEventOfferTemplate(currentOfferTitle, currentOfferPrice);
       }
-    }
+    } );
   } );
   return currentOffers;
 };

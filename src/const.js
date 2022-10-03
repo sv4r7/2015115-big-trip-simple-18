@@ -4,6 +4,22 @@ const routeMainContainerElement = document.querySelector('.trip-main');
 const routeControlsFiltersContainerElement = routeMainContainerElement.querySelector('.trip-controls__filters');
 const routeEventSectionElement = document.querySelector('.trip-events');
 
+const AUTHORIZATION = 'Basic hS2sfS44g6hpljkl';
+const END_POINT = 'https://18.ecmascript.pages.academy/big-trip/';
+
+const Method = {
+  GET: 'GET',
+  PUT: 'PUT',
+  POST: 'POST',
+  DELETE: 'DELETE',
+};
+
+const DataType = {
+  POINTS: 'points',
+  DESTINATIONS: 'destinations',
+  OFFERS: 'offers',
+};
+
 const SortType = {
   DAY: 'sort-day',
   PRICE: 'sort-price',
@@ -29,6 +45,7 @@ const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
+  INIT: 'INIT',
 };
 
 const EMPTY_WAYPOINT = {
@@ -41,6 +58,13 @@ const EMPTY_WAYPOINT = {
   'offers': [1,2,3],
 };
 
+const TimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
+};
+
+const OFFER_BY_TYPE = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
+
 export { SortType,
   State,
   FilterType,
@@ -50,4 +74,10 @@ export { SortType,
   routeEventSectionElement,
   routeMainContainerElement,
   EMPTY_WAYPOINT,
+  AUTHORIZATION,
+  END_POINT,
+  Method,
+  DataType,
+  OFFER_BY_TYPE,
+  TimeLimit,
 };

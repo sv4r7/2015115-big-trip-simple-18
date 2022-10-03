@@ -2,7 +2,6 @@ import { remove, render, RenderPosition } from '../framework/render.js';
 import { FormSortingView } from '../view/sort-view.js';
 import { WaypointsListView } from '../view/waypoints-list-view.js';
 import { EmptyWaypointsList } from '../view/empty-waypoints-list-view.js';
-import { NewEventButton } from '../view/new-event-btn-view.js';
 import { WaypointPresenter } from './waypoint-presenter.js';
 import { NewWaypointPresenter } from './new-waypoint-presenter.js';
 import { SortType,
@@ -10,15 +9,17 @@ import { SortType,
   UserAction,
   FilterType,
   routeEventSectionElement,
-  routeMainContainerElement,
+  TimeLimit,
 } from '../const.js';
 import { sortWaypointUp, sortPrice } from '../util.js';
 import { filter } from '../util.js';
+import { LoadingWiew } from '../view/loading-view.js';
+import { UiBlocker } from '../framework/ui-blocker/ui-blocker.js';
 
 class RoutePresenter {
 
   #wayPointListContainerElement = new WaypointsListView();
-  #newEventButtonElement = new NewEventButton();
+  #loadindElement = new LoadingWiew();
   #newWaypointPresenter = null;
   #emptyWaypointList = null;
   #formSortingElement = null;
@@ -27,6 +28,8 @@ class RoutePresenter {
   #waypointPresenter = new Map ();
   #currentSortType = SortType.DAY;
   #currentFilterType = FilterType.EVERYTHING;
+  #isLoading = true;
+  #uiBlocker = new UiBlocker(TimeLimit.LOWER_LIMIT, TimeLimit.UPPER_LIMIT);
 
   constructor (routeModel, filterModel) {
     this.#routeModel = routeModel;
@@ -63,20 +66,6 @@ class RoutePresenter {
     return filteredRoutes;
   }
 
-  #handleNewEventFormClose = () => {
-    this.#newEventButtonElement.element.disabled = false;
-  };
-
-  #handleNewEventButtonClick = () => {
-    this.createEvent(this.#handleNewEventFormClose);
-    this.#newEventButtonElement.element.disabled = true;
-  };
-
-  #renderNewEventButtonElement = () => {
-    render(this.#newEventButtonElement, routeMainContainerElement);
-    this.#newEventButtonElement.setClickHandler(this.#handleNewEventButtonClick);
-  };
-
   #renderEmptyWaypointList = () => {
     this.#emptyWaypointList = new EmptyWaypointsList (this.#currentFilterType);
     render(this.#emptyWaypointList, routeEventSectionElement);
@@ -90,22 +79,29 @@ class RoutePresenter {
 
   #renderWaypointListContainerElement = () => {
     render(this.#wayPointListContainerElement, routeEventSectionElement);
-  };
 
-  #renderPageFilling = () => {
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
+
     const routes = this.routes;
     const routesCount = routes.length;
 
-    this.#renderNewEventButtonElement();
-
     if (routesCount === 0) {
       this.#renderEmptyWaypointList();
-      return;
     }
-    this.#renderFormSortingElement();
+
+  };
+
+  #renderPageFilling = () => {
     this.#renderWaypointListContainerElement();
 
     this.#renderWaypointsList();
+  };
+
+  #renderLoading = () => {
+    render(this.#loadindElement, routeEventSectionElement, RenderPosition.AFTERBEGIN);
   };
 
   #renderWaypointsList = () => {
@@ -138,6 +134,7 @@ class RoutePresenter {
     this.#waypointPresenter.clear();
 
     remove(this.#formSortingElement);
+    remove(this.#loadindElement);
 
     if (this.#emptyWaypointList) {
       remove(this.#emptyWaypointList);
@@ -156,21 +153,41 @@ class RoutePresenter {
     this.#currentSortType = sortType;
     this.#clearWaypointList();
     this.#renderFormSortingElement();
+    this.#renderWaypointListContainerElement();
     this.#renderWaypointsList();
   };
 
-  #handleViewAction = (actionType, updateType, update) => {
+  #handleViewAction = async (actionType, updateType, update) => {
+    this.#uiBlocker.block();
+
     switch (actionType) {
       case UserAction.UPDATE_ROUTEPOINT:
-        this.#routeModel.updateRoute(updateType, update);
+        this.#waypointPresenter.get(update.id).setSaving();
+        try {
+          await this.#routeModel.updateWaypoint(updateType, update);
+        } catch (err) {
+          this.#waypointPresenter.get(update.id).setAborting();
+        }
         break;
       case UserAction.ADD_ROUTEPOINT:
-        this.#routeModel.addRoute(updateType, update);
+        this.#newWaypointPresenter.setSaving();
+        try {
+          this.#routeModel.addWaypoint(updateType, update);
+        } catch (err) {
+          this.#newWaypointPresenter.get(update.id).setAborting();
+        }
         break;
       case UserAction.DELETE_ROUTEPOINT:
-        this.#routeModel.deleteRoute(updateType, update);
+        this.#waypointPresenter.get(update.id).setDeleting();
+        try {
+          this.#routeModel.deleteWaypoint(updateType, update);
+        } catch (err) {
+          this.#waypointPresenter.get(update.id).setAborting();
+        }
         break;
     }
+
+    this.#uiBlocker.unblock();
   };
 
   #handleModelEvent = (updateType, data) => {
@@ -181,11 +198,20 @@ class RoutePresenter {
       case UpdateType.MINOR:
         this.#clearWaypointList();
         this.#renderFormSortingElement();
+        this.#renderWaypointListContainerElement();
         this.#renderWaypointsList();
         break;
       case UpdateType.MAJOR:
         this.#clearWaypointList( {resetSortType: true } );
         this.#renderFormSortingElement();
+        this.#renderWaypointListContainerElement();
+        this.#renderWaypointsList();
+        break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadindElement);
+        this.#renderFormSortingElement();
+        this.#renderWaypointListContainerElement();
         this.#renderWaypointsList();
         break;
     }
