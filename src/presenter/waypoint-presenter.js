@@ -71,6 +71,40 @@ class WaypointPresenter {
     }
   };
 
+  setSaving = () => {
+    if (this.#state === State.EDITING) {
+      this.#editFormComponent.updateElement( {
+        isDisabled: true,
+        isSaving: true,
+      } );
+    }
+  };
+
+  setDeleting = () => {
+    if (this.#state === State.EDITING) {
+      this.#editFormComponent.updateElement( {
+        isDisabled: true,
+        isDeleting: true,
+      } );
+    }
+  };
+
+  setAborting = () => {
+    if (this.#state === State.DEFAULT) {
+      this.#editFormComponent.shake();
+      return;
+    }
+
+    const resetFormState = () => {
+      this.#editFormComponent.updateElement( {
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      } );
+    };
+    this.#editFormComponent.shake(resetFormState);
+  };
+
   #replaceWaypointToEditForm = () => {
     replace(this.#editFormComponent, this.#waypointComponent);
     document.addEventListener('keydown', this.#escKeyDownHandler);
@@ -115,40 +149,6 @@ class WaypointPresenter {
   #handleFormCancel = () => {
     this.#editFormComponent.reset(this.#waypoint);
     this.#replaceEditFormToWaypoint();
-  };
-
-  setSaving = () => {
-    if (this.#state === State.EDITING) {
-      this.#editFormComponent.updateElement( {
-        isDisabled: true,
-        isSaving: true,
-      } );
-    }
-  };
-
-  setDeleting = () => {
-    if (this.#state === State.EDITING) {
-      this.#editFormComponent.updateElement( {
-        isDisabled: true,
-        isDeleting: true,
-      } );
-    }
-  };
-
-  setAborting = () => {
-    if (this.#state === State.DEFAULT) {
-      this.#editFormComponent.shake();
-      return;
-    }
-
-    const resetFormState = () => {
-      this.#editFormComponent.updateElement( {
-        isDisabled: false,
-        isSaving: false,
-        isDeleting: false,
-      } );
-    };
-    this.#editFormComponent.shake(resetFormState);
   };
 
 }
