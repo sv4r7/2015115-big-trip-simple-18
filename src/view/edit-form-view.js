@@ -212,11 +212,7 @@ class EditFormView extends AbstractStatefulView {
   };
 
   #getUpdateState = (stateId) => {
-    if (stateId) {
-      this.#updateState = true;
-    } else {
-      this.#updateState = false;
-    }
+    this.#updateState = Boolean(stateId);
   };
 
   #setInnerHandlers = () => {
