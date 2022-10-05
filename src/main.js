@@ -4,6 +4,7 @@ import { FilterModel } from './model/filter-model.js';
 import { FilterPresenter } from './presenter/filter-presenter.js';
 import { routeControlsFiltersContainerElement,
   routeMainContainerElement,
+  routeEventSectionElement,
   END_POINT,
   AUTHORIZATION } from './const.js';
 import { WaypointsApiService } from './waypoints-api-service.js';
@@ -28,7 +29,12 @@ const handleNewEventButtonClick = () => {
 
 filterPresenter.initiateFilters();
 routePresenter.initiatePage();
-routeModel.initiateModel()
+routeModel.initiateRoute()
+  .catch( () => {
+    newEventButtonElement.element.disabled = true;
+    routeEventSectionElement.firstChild.remove();
+    routePresenter.renderLoadingError();
+  } )
   .finally( () => {
     render(newEventButtonElement, routeMainContainerElement);
     newEventButtonElement.setClickHandler(handleNewEventButtonClick);

@@ -50,12 +50,12 @@ const UpdateType = {
 
 const EMPTY_WAYPOINT = {
   'basePrice': 1000,
-  'dateFrom': dayjs(),
-  'dateTo': dayjs(),
+  'dateFrom': dayjs().toISOString(),
+  'dateTo': dayjs().toISOString(),
   'destination': '',
   'id': '',
-  'type': 'taxi',
-  'offers': [1,2,3],
+  'type': 'ship',
+  'offers': [],
 };
 
 const TimeLimit = {

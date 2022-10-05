@@ -69,10 +69,6 @@ const createDestinationsTemplate = (destinations, city, type) => (
 const createEditFormElement = (state, destinations, offers, updateState) => {
   const { basePrice = '', dateFrom = dayjs() , dateTo = dayjs(), type, currentPointCityName, isDeleting, isDisabled, isSaving } = state;
 
-  if (!updateState) {
-    state.destination = destinations[0].id;
-  }
-
   const allDestinationsCityNames = destinations.map( (cityName) => cityName.name);
 
   const currentPointDestination = destinations.filter( (element) => element.id === state.destination );
@@ -158,17 +154,18 @@ class EditFormView extends AbstractStatefulView {
     this._state = EditFormView.parseWaypointDataToState(point);
     this.#destinations = destinations;
     this.#offers = offers;
-    this.#getUpdateState(this._state.id);
+    this.#getUpdateState(this._state.destination);
+
+    if (!this._state.destination) {
+      this._state.destination = destinations[0].id;
+    }
+
     this.#setInnerHandlers();
   }
 
-  #getUpdateState = (stateId) => {
-    if (stateId) {
-      this.#updateState = true;
-    } else {
-      this.#updateState = false;
-    }
-  };
+  get template() {
+    return createEditFormElement(this._state, this.#destinations, this.#offers, this.#updateState);
+  }
 
   reset = (point) => {
     this.updateElement(
@@ -176,9 +173,35 @@ class EditFormView extends AbstractStatefulView {
     );
   };
 
-  get template() {
-    return createEditFormElement(this._state, this.#destinations, this.#offers, this.#updateState);
+  setFormSubmitHandler(cb) {
+    this._callback.formSubmit = cb;
+    this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
   }
+
+  setFormDeleteHandler(cb) {
+    this._callback.formDelete = cb;
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#formDeleteHandler);
+  }
+
+  setFormCancelHandler(cb) {
+    if (this.#updateState) {
+      this._callback.formCancel = cb;
+      this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formCancelHandler);
+    }
+  }
+
+  removeElement = () => {
+    super.removeElement();
+
+    if (this.#setDateFromPicker) {
+      this.#setDateFromPicker.destroy();
+      this.#setDateFromPicker = null;
+    }
+    if (this.#setDateToPicker) {
+      this.#setDateToPicker.destroy();
+      this.#setDateToPicker = null;
+    }
+  };
 
   _restoreHandlers = () => {
     this.#setInnerHandlers();
@@ -186,6 +209,10 @@ class EditFormView extends AbstractStatefulView {
     this.setFormCancelHandler(this._callback.formCancel);
     this.setFormSubmitHandler(this._callback.formSubmit);
     this.setFormDeleteHandler(this._callback.formDelete);
+  };
+
+  #getUpdateState = (stateId) => {
+    this.#updateState = Boolean(stateId);
   };
 
   #setInnerHandlers = () => {
@@ -243,51 +270,15 @@ class EditFormView extends AbstractStatefulView {
     } );
   };
 
-  static parseWaypointDataToState = (point) => (
-    {
-      ...point,
-      currentPointCityName: null,
-      isDisabled: false,
-      isDeleting: false,
-      isSaving: false,
-    }
-  );
-
-  static parseStateToWaypointData = (state) => {
-    const waypointData = {...state};
-    delete waypointData.currentPointCityName;
-    delete waypointData.isDeleting;
-    delete waypointData.isSaving;
-    delete waypointData.isDisabled;
-    return waypointData;
-  };
-
-  setFormSubmitHandler(cb) {
-    this._callback.formSubmit = cb;
-    this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
-  }
-
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
     this._callback.formSubmit(EditFormView.parseStateToWaypointData(this._state) );
   };
 
-  setFormDeleteHandler(cb) {
-    this._callback.formDelete = cb;
-    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#formDeleteHandler);
-  }
-
   #formDeleteHandler = (evt) => {
     evt.preventDefault();
     this._callback.formDelete(EditFormView.parseStateToWaypointData(this._state) );
   };
-
-  setFormCancelHandler(cb) {
-    if (this.#updateState) {
-      this._callback.formCancel = cb;
-      this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formCancelHandler);
-    }
-  }
 
   #formCancelHandler = () => {
     this._callback.formCancel();
@@ -318,12 +309,6 @@ class EditFormView extends AbstractStatefulView {
         defaultDate: formatToTimeDateDual(dateFrom),
         onChange: this.#dateFromChangeHandler,
         minDate: 'today',
-        disable: [
-          {
-            from: '',
-            to: 'today',
-          }
-        ],
       },
     );
 
@@ -335,12 +320,6 @@ class EditFormView extends AbstractStatefulView {
         defaultDate: formatToTimeDateDual(dateTo),
         onChange: this.#dateToChangeHandler,
         minDate: this.#setDateFromPicker.selectedDates[0],
-        disable: [
-          {
-            from: '',
-            to: 'minDate',
-          }
-        ],
       },
     );
 
@@ -354,20 +333,25 @@ class EditFormView extends AbstractStatefulView {
 
   };
 
-  removeElement = () => {
-    super.removeElement();
+  static parseWaypointDataToState = (point) => (
+    {
+      ...point,
+      currentPointCityName: null,
+      isDisabled: false,
+      isDeleting: false,
+      isSaving: false,
+    }
+  );
 
-    if (this.#setDateFromPicker) {
-      this.#setDateFromPicker.destroy();
-      this.#setDateFromPicker = null;
-    }
-    if (this.#setDateToPicker) {
-      this.#setDateToPicker.destroy();
-      this.#setDateToPicker = null;
-    }
+  static parseStateToWaypointData = (state) => {
+    const waypointData = {...state};
+    delete waypointData.currentPointCityName;
+    delete waypointData.isDeleting;
+    delete waypointData.isSaving;
+    delete waypointData.isDisabled;
+    return waypointData;
   };
 
 }
 
 export { EditFormView };
-

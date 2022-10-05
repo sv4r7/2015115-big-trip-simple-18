@@ -13,22 +13,6 @@ class RouteModel extends Observable {
 
   }
 
-  initiateModel = async () => {
-    try {
-      const waypoints = await this.#waypointsApiService.waypoints;
-      const destinations = await this.#waypointsApiService.destinations;
-      const offers = await this.#waypointsApiService.offers;
-      this.#routes = waypoints.map(this.#adaptToClient);
-      this.#destinations = destinations;
-      this.#offers = offers;
-    } catch(err) {
-      this.#routes = [];
-      this.#destinations = [];
-      this.#offers = [];
-    }
-    this._notify(UpdateType.INIT);
-  };
-
   get routes () {
     return this.#routes;
   }
@@ -40,6 +24,23 @@ class RouteModel extends Observable {
   get offers () {
     return this.#offers;
   }
+
+  initiateRoute = async () => {
+    try {
+      const waypoints = await this.#waypointsApiService.waypoints;
+      const destinations = await this.#waypointsApiService.destinations;
+      const offers = await this.#waypointsApiService.offers;
+      this.#routes = waypoints.map(this.#adaptToClient);
+      this.#destinations = destinations;
+      this.#offers = offers;
+    } catch(err) {
+      this.#routes = [];
+      this.#destinations = [];
+      this.#offers = [];
+      throw new Error ('Some data is lost');
+    }
+    this._notify(UpdateType.INIT);
+  };
 
   updateWaypoint = async (updateType, update) => {
     const index = this.#routes.findIndex( (route) => route.id === update.id );

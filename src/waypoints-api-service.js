@@ -62,6 +62,7 @@ class WaypointsApiService extends ApiService {
       'base_price': waypoint.basePrice,
       'date_from': waypoint.dateFrom,
       'date_to': waypoint.dateTo,
+      'is_favorite': false,
     };
 
     delete adaptedWaypoint.basePrice;

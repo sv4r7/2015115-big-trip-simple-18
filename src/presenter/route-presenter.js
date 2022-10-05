@@ -4,6 +4,7 @@ import { WaypointsListView } from '../view/waypoints-list-view.js';
 import { EmptyWaypointsList } from '../view/empty-waypoints-list-view.js';
 import { WaypointPresenter } from './waypoint-presenter.js';
 import { NewWaypointPresenter } from './new-waypoint-presenter.js';
+import { ErrorTemplate } from '../view/application-error.js';
 import { SortType,
   UpdateType,
   UserAction,
@@ -20,6 +21,7 @@ class RoutePresenter {
 
   #wayPointListContainerElement = new WaypointsListView();
   #loadindElement = new LoadingWiew();
+  #errorTemplateElement = new ErrorTemplate();
   #newWaypointPresenter = null;
   #emptyWaypointList = null;
   #formSortingElement = null;
@@ -41,16 +43,6 @@ class RoutePresenter {
     this.#filterModel.addObserver(this.#handleModelEvent);
   }
 
-  initiatePage = () => {
-    this.#renderPageFilling();
-  };
-
-  createEvent = (cb) => {
-    this.#currentSortType = SortType.DAY;
-    this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
-    this.#newWaypointPresenter.initiateNewWaypoint(cb, this.#routeModel.destinations, this.#routeModel.offers);
-  };
-
   get routes () {
     this.#currentFilterType = this.#filterModel.filter;
     const currentRoutes = this.#routeModel.routes;
@@ -65,6 +57,20 @@ class RoutePresenter {
 
     return filteredRoutes;
   }
+
+  initiatePage = () => {
+    this.#renderPageFilling();
+  };
+
+  createEvent = (cb) => {
+    this.#currentSortType = SortType.DAY;
+    this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
+    this.#newWaypointPresenter.initiateNewWaypoint(cb, this.#routeModel.destinations, this.#routeModel.offers);
+  };
+
+  renderLoadingError = () => {
+    render(this.#errorTemplateElement, routeEventSectionElement);
+  };
 
   #renderEmptyWaypointList = () => {
     this.#emptyWaypointList = new EmptyWaypointsList (this.#currentFilterType);
@@ -90,13 +96,14 @@ class RoutePresenter {
 
     if (routesCount === 0) {
       this.#renderEmptyWaypointList();
+      return;
     }
+    this.#renderFormSortingElement();
 
   };
 
   #renderPageFilling = () => {
     this.#renderWaypointListContainerElement();
-
     this.#renderWaypointsList();
   };
 
@@ -122,11 +129,6 @@ class RoutePresenter {
     this.#waypointPresenter.set(waypoint.id, waypointPresenter);
   };
 
-  #handleStateChange = () => {
-    this.#newWaypointPresenter.destroy();
-    this.#waypointPresenter.forEach( (subclass) => subclass.resetView() );
-  };
-
   #clearWaypointList = ( {resetSortType = false} = {} ) => {
     this.#newWaypointPresenter.destroy();
 
@@ -145,6 +147,11 @@ class RoutePresenter {
     }
   };
 
+  #handleStateChange = () => {
+    this.#newWaypointPresenter.destroy();
+    this.#waypointPresenter.forEach( (subclass) => subclass.resetView() );
+  };
+
   #handleSortTypeChange = (sortType) => {
     if (this.#currentSortType === sortType) {
       return;
@@ -152,7 +159,6 @@ class RoutePresenter {
 
     this.#currentSortType = sortType;
     this.#clearWaypointList();
-    this.#renderFormSortingElement();
     this.#renderWaypointListContainerElement();
     this.#renderWaypointsList();
   };
@@ -197,20 +203,17 @@ class RoutePresenter {
         break;
       case UpdateType.MINOR:
         this.#clearWaypointList();
-        this.#renderFormSortingElement();
         this.#renderWaypointListContainerElement();
         this.#renderWaypointsList();
         break;
       case UpdateType.MAJOR:
         this.#clearWaypointList( {resetSortType: true } );
-        this.#renderFormSortingElement();
         this.#renderWaypointListContainerElement();
         this.#renderWaypointsList();
         break;
       case UpdateType.INIT:
         this.#isLoading = false;
         remove(this.#loadindElement);
-        this.#renderFormSortingElement();
         this.#renderWaypointListContainerElement();
         this.#renderWaypointsList();
         break;
@@ -219,3 +222,4 @@ class RoutePresenter {
 
 }
 export { RoutePresenter };
+
