@@ -1,10 +1,10 @@
 import { remove, render, RenderPosition } from '../framework/render.js';
-import { FormSortingView } from '../view/sort-view.js';
+import { FormSortingView } from '../view/form-sorting-view.js';
 import { WaypointsListView } from '../view/waypoints-list-view.js';
-import { EmptyWaypointsList } from '../view/empty-waypoints-list-view.js';
+import { EmptyWaypointsListView } from '../view/empty-waypoints-list-view.js';
 import { WaypointPresenter } from './waypoint-presenter.js';
 import { NewWaypointPresenter } from './new-waypoint-presenter.js';
-import { ErrorTemplate } from '../view/application-error.js';
+import { ApplicationErrorView } from '../view/application-error-view.js';
 import { SortType,
   UpdateType,
   UserAction,
@@ -21,7 +21,7 @@ class RoutePresenter {
 
   #wayPointListContainerElement = new WaypointsListView();
   #loadindElement = new LoadingWiew();
-  #errorTemplateElement = new ErrorTemplate();
+  #errorTemplateElement = new ApplicationErrorView();
   #newWaypointPresenter = null;
   #emptyWaypointList = null;
   #formSortingElement = null;
@@ -73,7 +73,7 @@ class RoutePresenter {
   };
 
   #renderEmptyWaypointList = () => {
-    this.#emptyWaypointList = new EmptyWaypointsList (this.#currentFilterType);
+    this.#emptyWaypointList = new EmptyWaypointsListView (this.#currentFilterType);
     render(this.#emptyWaypointList, routeEventSectionElement);
   };
 

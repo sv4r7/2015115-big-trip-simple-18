@@ -31,11 +31,7 @@ const formatToDate = (data) => dayjs(data).format('DD MMMM YYYY');
 
 const formatToDayMonth = (data) => dayjs(data).format('MMM DD');
 
-const formatToYear = (data) => dayjs(data).format('YYYY');
-
 const formatMinutesToTime = (data) => dayjs(data).format('HH [:] mm');
-
-const getRandomIndex = (data) => getRandomNumber(0, data.length - 1);
 
 const getWeightForNullDate = (dateA, dateB) => {
   if (dateA === null && dateB === null) {
@@ -71,8 +67,6 @@ const filter = {
 };
 
 export { getRandomNumber,
-  getRandomIndex,
-  formatToYear,
   formatToTimeDate,
   formatToDate,
   sortPrice,

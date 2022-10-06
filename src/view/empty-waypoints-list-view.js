@@ -17,7 +17,7 @@ const createEmptyWaypointsListTemplate = (filterType) => {
 
 };
 
-class EmptyWaypointsList extends AbstractView {
+class EmptyWaypointsListView extends AbstractView {
   #filterType = null;
 
   constructor (filterType) {
@@ -31,4 +31,4 @@ class EmptyWaypointsList extends AbstractView {
 
 }
 
-export { EmptyWaypointsList };
+export { EmptyWaypointsListView };

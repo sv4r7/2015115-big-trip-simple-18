@@ -1,5 +1,5 @@
 import {render, replace, remove } from '../framework/render.js';
-import { FormFiltersView } from '../view/filters-view';
+import { FormFiltersView } from '../view/form-filters-view.js';
 import { filter } from '../util.js';
 import { FilterType, UpdateType } from '../const.js';
 

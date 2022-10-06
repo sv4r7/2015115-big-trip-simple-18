@@ -6,7 +6,7 @@ const createErrorTemplate = () => (
     </p>`
 );
 
-class ErrorTemplate extends AbstractView {
+class ApplicationErrorView extends AbstractView {
 
   get template () {
     return createErrorTemplate();
@@ -14,4 +14,4 @@ class ErrorTemplate extends AbstractView {
 
 }
 
-export { ErrorTemplate };
+export { ApplicationErrorView };
